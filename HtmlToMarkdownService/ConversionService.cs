@@ -6,7 +6,11 @@ public class ConversionService
     private List<string> _errorLogs = new List<string>();
     private int listIndentLevel = 0;  // Track indentation level for nested lists
 
-    // Main method to convert HTML to Markdown
+    /// <summary>
+    /// Main method to convert HTML to Markdown
+    /// </summary>
+    /// <param name="html"></param>
+    /// <returns></returns>
     public string ConvertHtmlToMarkdown(string html)
     {
         if (string.IsNullOrEmpty(html))
@@ -33,7 +37,17 @@ public class ConversionService
         return markdown.ToString();
     }
 
-    // Method to handle parsing of HTML elements
+    // Method to get error logs
+    public List<string> GetErrorLogs()
+    {
+        return _errorLogs;
+    }
+
+    /// <summary>
+    /// Method to handle parsing of HTML elements
+    /// </summary>
+    /// <param name="html"></param>
+    /// <returns></returns>
     private string ParseHtml(string html)
     {
         // First, normalize the input HTML to remove spaces and line breaks
@@ -43,7 +57,6 @@ public class ConversionService
         int position = 0;
         bool inTableHeader = false;
         int currentColumnCount = 0; // Temporary variable to track number of columns in the current table
-        string currentAnchorHref = string.Empty;
         while (position < normalizedHtml.Length)
         {
             if (normalizedHtml[position] == '<')
@@ -288,15 +301,6 @@ public class ConversionService
                 position++;
             }
         }
-
-        //// After processing, remove leading spaces from each line
-        //string[] lines = markdown.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-        //StringBuilder result = new StringBuilder();
-        //foreach (var line in lines)
-        //{
-        //    result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
-        //}
-
         return markdown.ToString();
     }
 
@@ -336,11 +340,5 @@ public class ConversionService
     private void LogError(string message)
     {
         _errorLogs.Add(message);
-    }
-
-    // Method to get error logs
-    public List<string> GetErrorLogs()
-    {
-        return _errorLogs;
-    }
+    }    
 }

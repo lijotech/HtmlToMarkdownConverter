@@ -63,6 +63,14 @@ namespace HtmlToMarkdownConsole
                 var result = conversionService.ConvertHtmlToMarkdown(html);
                 Console.WriteLine("Markdown Output:");
                 Console.WriteLine(result);
+                var errors= conversionService.GetErrorLogs();
+                if (errors.Any())
+                {
+                    errors.ForEach(error =>
+                    {
+                        Console.WriteLine(error);
+                    });
+                }
             }
             catch (Exception ex)
             {
