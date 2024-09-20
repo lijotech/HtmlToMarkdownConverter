@@ -36,8 +36,11 @@ public class ConversionService
 
         return markdown.ToString();
     }
-
-    // Method to get error logs
+    
+    /// <summary>
+    /// List the errors during conversion
+    /// </summary>
+    /// <returns></returns>
     public List<string> GetErrorLogs()
     {
         return _errorLogs;
