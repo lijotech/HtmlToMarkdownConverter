@@ -13,4 +13,4 @@
 To install the tool, use the following command:
 
 ```sh
-npm install html-to-markdown-converter```
+npm install html-to-markdown-converter
