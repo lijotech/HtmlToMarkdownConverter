@@ -36,7 +36,7 @@ public class ConversionService
 
         return markdown.ToString();
     }
-    
+
     /// <summary>
     /// List the errors during conversion
     /// </summary>
@@ -174,7 +174,7 @@ public class ConversionService
                         }
                         else
                         {
-                            markdown.Append("**");                           
+                            markdown.Append("**");
                         }
                         break;
 
@@ -245,7 +245,7 @@ public class ConversionService
                         break;
                     case "thead":
                         if (isClosingTag && inTableHeader)
-                        {                            
+                        {
                             // Generate the separator line dynamically based on the number of columns in the current table
                             markdown.Append("|");
                             for (int i = 0; i < currentColumnCount; i++)
@@ -302,7 +302,33 @@ public class ConversionService
                 position++;
             }
         }
-        return markdown.ToString();
+
+        // After processing, remove leading spaces from each line
+        string[] lines = markdown.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        bool endsWithLineBreak = markdown.ToString().EndsWith("\r\n") || markdown.ToString().EndsWith("\n");
+        if (lines.Count() == 1)
+        {
+            return markdown.ToString();
+        }
+        StringBuilder result = new StringBuilder();
+        foreach (var line in lines)
+        {
+            result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
+        }
+
+        string finalString = result.ToString();
+        if (endsWithLineBreak)
+        {
+            // Find the position of the last occurrence of "\r\n"
+            int lastIndex = finalString.LastIndexOf("\r\n");
+
+            // Remove the last occurrence of "\r\n"
+            if (lastIndex >= 0)
+            {
+                finalString = finalString.Remove(lastIndex, 2);
+            }
+        }
+        return finalString;
     }
 
     private string NormalizeHtml(string html)
@@ -311,10 +337,11 @@ public class ConversionService
         string normalizedHtml = html
             .Replace("\n", "")       // Remove newlines
             .Replace("\r", "")       // Remove carriage returns
-            .Replace("\t", " ");      // Replace tabs with single space           
+            .Replace("\t", " ");      // Replace tabs with single space
+                                      //.Replace("> <", "><");   // Remove spaces between tags
 
         // Step 2: Replace multiple spaces with a single space
-        normalizedHtml = System.Text.RegularExpressions.Regex.Replace(normalizedHtml, @"\s{2,}", " ");
+        normalizedHtml = Regex.Replace(normalizedHtml, @"\s{2,}", " ");
 
         return normalizedHtml.Trim(); // Return the trimmed and normalized HTML
     }
@@ -340,5 +367,5 @@ public class ConversionService
     private void LogError(string message)
     {
         _errorLogs.Add(message);
-    }    
+    }
 }

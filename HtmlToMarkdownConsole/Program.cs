@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-
+﻿
 namespace HtmlToMarkdownConsole
 {
     public class Program
@@ -7,7 +6,6 @@ namespace HtmlToMarkdownConsole
 
         static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
             try
             {
                 ConversionService conversionService = new ConversionService();
@@ -63,7 +61,7 @@ namespace HtmlToMarkdownConsole
                 var result = conversionService.ConvertHtmlToMarkdown(html);
                 Console.WriteLine("Markdown Output:");
                 Console.WriteLine(result);
-                var errors= conversionService.GetErrorLogs();
+                var errors = conversionService.GetErrorLogs();
                 if (errors.Any())
                 {
                     errors.ForEach(error =>
@@ -77,8 +75,5 @@ namespace HtmlToMarkdownConsole
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
-
-        static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args);
     }
 }
