@@ -174,7 +174,7 @@ public class ConversionService
                         }
                         else
                         {
-                            markdown.Append("**");
+                            markdown.Append("**");                           
                         }
                         break;
 
@@ -245,9 +245,7 @@ public class ConversionService
                         break;
                     case "thead":
                         if (isClosingTag && inTableHeader)
-                        {
-                            //markdown.AppendLine(); // Close the header row
-
+                        {                            
                             // Generate the separator line dynamically based on the number of columns in the current table
                             markdown.Append("|");
                             for (int i = 0; i < currentColumnCount; i++)
@@ -313,8 +311,7 @@ public class ConversionService
         string normalizedHtml = html
             .Replace("\n", "")       // Remove newlines
             .Replace("\r", "")       // Remove carriage returns
-            .Replace("\t", " ")      // Replace tabs with single space
-            .Replace("> <", "><");   // Remove spaces between tags
+            .Replace("\t", " ");      // Replace tabs with single space           
 
         // Step 2: Replace multiple spaces with a single space
         normalizedHtml = System.Text.RegularExpressions.Regex.Replace(normalizedHtml, @"\s{2,}", " ");
