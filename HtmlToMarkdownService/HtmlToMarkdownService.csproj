@@ -12,12 +12,12 @@
 		<PackageTags>HtmlToMarkdown; ReverseMarkdown; markdown converter; htmltomd; html converter;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
-		<Version>1.0.5</Version>
+		<Version>1.0.6</Version>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReleaseNotes>Minor bug fixes</PackageReleaseNotes>
+		<PackageReleaseNotes>Minor bug fixes and other configuration updates</PackageReleaseNotes>
 	</PropertyGroup>
-	<PropertyGroup >
+	<PropertyGroup>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<Deterministic>True</Deterministic>
 		<Optimize>True</Optimize>
