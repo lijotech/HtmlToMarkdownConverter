@@ -1,3 +1,4 @@
+using HtmlToMarkdownService;
 namespace HtmlToMarkdownTests;
 
 public class ConversionServiceTests
@@ -79,10 +80,10 @@ public class ConversionServiceTests
     }
 
     [Theory]
-    [InlineData("![Alt Text](proto:path)","<img src=\"proto:path\" alt=\"Alt Text\" />")]
-    [InlineData("![](proto:path)","<img src=\"proto:path\" />")]
-    [InlineData("![Alt Text]()","<img alt=\"Alt Text\" />")]
-    public void ConvertsImage(string expected,string imageHtmlInput)
+    [InlineData("![Alt Text](proto:path)", "<img src=\"proto:path\" alt=\"Alt Text\" />")]
+    [InlineData("![](proto:path)", "<img src=\"proto:path\" />")]
+    [InlineData("![Alt Text]()", "<img alt=\"Alt Text\" />")]
+    public void ConvertsImage(string expected, string imageHtmlInput)
     {
         var conversionService = new ConversionService();
 
@@ -105,13 +106,13 @@ public class ConversionServiceTests
     }
 
     [Theory]
-    [InlineData("# Heading Text\r\n\r\n","<h1>Heading Text</h1>")]
-    [InlineData("## Heading Text\r\n\r\n","<h2>Heading Text</h2>")]
-    [InlineData("### Heading Text\r\n\r\n","<h3>Heading Text</h3>")]
-    [InlineData("#### Heading Text\r\n\r\n","<h4>Heading Text</h4>")]
-    [InlineData("##### Heading Text\r\n\r\n","<h5>Heading Text</h5>")]
-    [InlineData("###### Heading Text\r\n\r\n","<h6>Heading Text</h6>")]
-   
+    [InlineData("# Heading Text\r\n\r\n", "<h1>Heading Text</h1>")]
+    [InlineData("## Heading Text\r\n\r\n", "<h2>Heading Text</h2>")]
+    [InlineData("### Heading Text\r\n\r\n", "<h3>Heading Text</h3>")]
+    [InlineData("#### Heading Text\r\n\r\n", "<h4>Heading Text</h4>")]
+    [InlineData("##### Heading Text\r\n\r\n", "<h5>Heading Text</h5>")]
+    [InlineData("###### Heading Text\r\n\r\n", "<h6>Heading Text</h6>")]
+
     public void ConvertsHeading(string expected, string htmlInput)
     {
         var conversionService = new ConversionService();

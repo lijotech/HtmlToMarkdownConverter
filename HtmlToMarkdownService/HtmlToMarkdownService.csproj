@@ -9,7 +9,7 @@
 		<Title>HtmlToMarkdownConverter</Title>
 		<Description>HtmlToMarkdownConverter is a Html to Markdown converter library  to use with C# applications</Description>
 		<Copyright>Copyright © 2024</Copyright>
-		<PackageTags>HtmlToMarkdown; ReverseMarkdown; markdown converter; htmltomd; html converter;</PackageTags>
+		<PackageTags>HtmlToMarkdown; markdown converter; htmltomd; html converter; html2markdown; converthtml;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
 		<Version>1.0.6</Version>
@@ -21,6 +21,7 @@
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<Deterministic>True</Deterministic>
 		<Optimize>True</Optimize>
+        <EnablePackageValidation>true</EnablePackageValidation>
 	</PropertyGroup>
 	<PropertyGroup>
 		<IncludeSymbols>true</IncludeSymbols>
@@ -31,6 +32,9 @@
 	<PropertyGroup>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	</PropertyGroup>
+    <PropertyGroup>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
@@ -38,11 +42,7 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Update="LICENSE.txt">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
+	<ItemGroup>		
 		<None Update="Readme.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>

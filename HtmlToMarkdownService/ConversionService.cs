@@ -1,6 +1,11 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
+namespace HtmlToMarkdownService;
+
+/// <summary>
+/// Service class to handle all conversion of html to marldown
+/// </summary>
 public class ConversionService
 {
     private List<string> _errorLogs = new List<string>();
@@ -305,8 +310,9 @@ public class ConversionService
 
         // After processing, remove leading spaces from each line
         string[] lines = markdown.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        //checks if generated string has linebreaks at end
         bool endsWithLineBreak = markdown.ToString().EndsWith("\r\n") || markdown.ToString().EndsWith("\n");
-        if (lines.Count() == 1)
+        if (lines.Length == 1)
         {
             return markdown.ToString();
         }
@@ -331,6 +337,11 @@ public class ConversionService
         return finalString;
     }
 
+    /// <summary>
+    /// Normalize the html except spaces between tags
+    /// </summary>
+    /// <param name="html"></param>
+    /// <returns></returns>
     private string NormalizeHtml(string html)
     {
         // Step 1: Remove line breaks and excess spacing from HTML input
@@ -346,7 +357,12 @@ public class ConversionService
         return normalizedHtml.Trim(); // Return the trimmed and normalized HTML
     }
 
-    // Method to extract attributes from a tag
+    /// <summary>
+    /// Method to extract attributes from a tag
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="attribute"></param>
+    /// <returns></returns>
     private string ExtractAttribute(string tag, string attribute)
     {
         string pattern = $@"{attribute}\s*=\s*[""']([^""']+)[""']";
@@ -354,7 +370,12 @@ public class ConversionService
         return match.Success ? match.Groups[1].Value : string.Empty;
     }
 
-    // Method to extract inner content of a tag, needed for elements like <button>
+    /// <summary>
+    /// Method to extract inner content of a tag, needed for elements like 
+    /// </summary>
+    /// <param name="html"></param>
+    /// <param name="position"></param>
+    /// <returns></returns>
     private string ExtractInnerContent(string html, ref int position)
     {
         int startContent = html.IndexOf('>', position) + 1;
@@ -363,7 +384,10 @@ public class ConversionService
         return html.Substring(startContent, endContent - startContent).Trim();
     }
 
-    // Method to log errors
+    /// <summary>
+    /// Method to log errors
+    /// </summary>
+    /// <param name="message"></param>
     private void LogError(string message)
     {
         _errorLogs.Add(message);
