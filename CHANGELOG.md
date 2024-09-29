@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## v1.0.7 [Unreleased]
 - Fix the self closing tag of `<br/>`
+- Fix the nested issue of BlockQuote
+- Fix the ordered list syntax not visible issue.
 
 ### Added
 

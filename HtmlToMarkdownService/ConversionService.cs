@@ -65,6 +65,9 @@ public class ConversionService
         int position = 0;
         bool inTableHeader = false;
         int currentColumnCount = 0; // Temporary variable to track number of columns in the current table
+        int blockquoteDepth = 0; // Track blockquote nesting level
+        Stack<string> listTypeStack = new Stack<string>(); // Stack to track parent list types
+        bool firstListItem = true; // Flag to track the first <li> in each list
         while (position < normalizedHtml.Length)
         {
             if (normalizedHtml[position] == '<')
@@ -127,10 +130,13 @@ public class ConversionService
                         if (!isClosingTag)
                         {
                             listIndentLevel++;
+                            listTypeStack.Push(tagName); // Push the current list type to the stack
+                            firstListItem = true; // Reset the flag for the new list
                         }
                         else
                         {
                             listIndentLevel--;
+                            listTypeStack.Pop(); // Pop the stack when closing the list
                             markdown.AppendLine();
                         }
                         break;
@@ -138,7 +144,17 @@ public class ConversionService
                     case "li":
                         if (!isClosingTag)
                         {
-                            markdown.Append(new string(' ', listIndentLevel * 2) + (tagName == "ul" ? "* " : "1. "));
+                            // If it's the first list item, insert a line break before the item
+                            if (firstListItem)
+                            {
+                                markdown.AppendLine(); // Add a line break before the first list item
+                                firstListItem = false; // After the first list item, set flag to false
+                            }
+                            // Get the current list type from the stack
+                            string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
+
+                            // Append the appropriate list marker (* for ul, 1. for ol)
+                            markdown.Append(new string(' ', listIndentLevel * 2) + (parentListType == "ul" ? "* " : "1. "));
                         }
                         if (isClosingTag)
                         {
@@ -149,11 +165,17 @@ public class ConversionService
                     case "blockquote":
                         if (!isClosingTag)
                         {
-                            markdown.Append("> ");
+                            blockquoteDepth++; // Increase depth on opening blockquote
+                            markdown.AppendLine().Append(new string('>', blockquoteDepth) + " ");
                         }
                         if (isClosingTag)
-                        {
-                            markdown.AppendLine().AppendLine(); // Ensure line break after blockquote
+                        {                            
+                            markdown.AppendLine(); // Line break after closing blockquote
+                            if (blockquoteDepth > 1)
+                            {
+                                markdown.Append("> ");
+                            }
+                            blockquoteDepth--; // Decrease depth on closing blockquote
                         }
                         break;
 
@@ -210,7 +232,7 @@ public class ConversionService
                         string src = ExtractAttribute(tag, "src");
                         string alt = ExtractAttribute(tag, "alt");
                         markdown.Append($"![{alt}]({src})");
-                        break;                  
+                        break;
                     case "br":
                         markdown.AppendLine(); // Line break for <br> tag
                         break;

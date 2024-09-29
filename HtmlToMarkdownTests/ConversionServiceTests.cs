@@ -159,4 +159,49 @@ public class ConversionServiceTests
 
         Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
     }
+
+    [Theory]
+    [InlineData("Paragraph Text", "<div>Paragraph Text</div>")]
+    [InlineData("Paragraph Text\r\n", "<div>Paragraph Text<br/></div>")]
+    public void ConvertsSingleBreakInsideDiv(string expected, string htmlInput)
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
+    }
+
+    [Fact]
+    public void ConvertsBlockQuote()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n> Quote Text\r\n", conversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text</blockquote>"));
+    }
+
+    [Fact]
+    public void ConvertsNestedBlockQuote()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n> Quote Text\r\n>> Inner Quote Text\r\n> More Text\r\n",
+            conversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text<blockquote>Inner Quote Text</blockquote>More Text</blockquote>"));
+    }
+
+    [Fact]
+    public void ConvertsUnOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n* Item 1\r\n* Item 2\r\n* Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>"));
+    }
+
+    [Fact]
+    public void ConvertsOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n1. Item 1\r\n1. Item 2\r\n1. Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>"));
+    }
 }
