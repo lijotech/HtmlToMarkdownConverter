@@ -77,12 +77,23 @@ public class ConversionService
                 }
 
                 string tag = normalizedHtml.Substring(position + 1, endTag - position - 1).Trim();
+                bool isSelfClosing = tag.EndsWith("/");  // Check if it's a self-closing tag
                 string tagName = tag.Split(' ')[0].ToLower();
-                bool isClosingTag = tagName.StartsWith("/");
 
-                if (isClosingTag)
+                bool isClosingTag = false;
+
+                // Handle self-closing tag detection
+                if (isSelfClosing)
                 {
-                    tagName = tagName.Substring(1);
+                    tagName = tagName.TrimEnd('/');
+                }
+                else
+                {
+                    isClosingTag = tagName.StartsWith("/");
+                    if (isClosingTag)
+                    {
+                        tagName = tagName.Substring(1);
+                    }
                 }
 
                 switch (tagName)
@@ -199,14 +210,13 @@ public class ConversionService
                         string src = ExtractAttribute(tag, "src");
                         string alt = ExtractAttribute(tag, "alt");
                         markdown.Append($"![{alt}]({src})");
-                        break;
-
+                        break;                  
                     case "br":
                         markdown.AppendLine(); // Line break for <br> tag
                         break;
 
                     case "hr":
-                        markdown.AppendLine("---").AppendLine(); // Horizontal rule in Markdown
+                        markdown.AppendLine().AppendLine("---"); // Horizontal rule in Markdown
                         break;
 
                     case "table":

@@ -119,4 +119,44 @@ public class ConversionServiceTests
 
         Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
     }
+
+    [Fact]
+    public void ConvertsHorizontalRule()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<hr />";
+        var expectedMarkdown = "\r\n---\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
+
+    [Fact]
+    public void ConvertsParagraph()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<p>Paragraph Text</p>";
+        var expectedMarkdown = "Paragraph Text\r\n\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
+
+    [Theory]
+    [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br/>Text</p>")]
+    [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br>Text</p>")]
+    public void ConvertsBreak(string expected, string htmlInput)
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
+    }
 }
