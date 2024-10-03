@@ -1,10 +1,21 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
+namespace HtmlToMarkdownService;
+
+/// <summary>
+/// Service class to handle all conversion of html to marldown
+/// </summary>
 public class ConversionService
 {
     private List<string> _errorLogs = new List<string>();
-    private int listIndentLevel = 0;  // Track indentation level for nested lists
+    private HashSet<string> _ignoredTags;
+
+    /// <inheritdoc/>
+    public ConversionService()
+    {
+        _ignoredTags = new HashSet<string> { "head", "title", "style", "script" }; // Tags to ignore
+    }
 
     /// <summary>
     /// Main method to convert HTML to Markdown
@@ -60,6 +71,12 @@ public class ConversionService
         int position = 0;
         bool inTableHeader = false;
         int currentColumnCount = 0; // Temporary variable to track number of columns in the current table
+        int blockquoteDepth = 0; // Track blockquote nesting level
+        Stack<string> listTypeStack = new Stack<string>(); // Stack to track parent list types
+        bool firstListItem = true; // Flag to track the first <li> in each list
+        int listIndentLevel = 0;  // Track indentation level for nested lists
+        bool ignoreContent = false; // Flag to track whether content should be ignored
+
         while (position < normalizedHtml.Length)
         {
             if (normalizedHtml[position] == '<')
@@ -72,13 +89,46 @@ public class ConversionService
                 }
 
                 string tag = normalizedHtml.Substring(position + 1, endTag - position - 1).Trim();
+                bool isSelfClosing = tag.EndsWith("/");  // Check if it's a self-closing tag
                 string tagName = tag.Split(' ')[0].ToLower();
-                bool isClosingTag = tagName.StartsWith("/");
 
-                if (isClosingTag)
+                bool isClosingTag = false;
+
+                // Handle self-closing tag detection
+                if (isSelfClosing)
                 {
-                    tagName = tagName.Substring(1);
+                    tagName = tagName.TrimEnd('/');
                 }
+                else
+                {
+                    isClosingTag = tagName.StartsWith("/");
+                    if (isClosingTag)
+                    {
+                        tagName = tagName.Substring(1);
+                    }
+                }
+
+                // Check if we need to start ignoring content for certain tags
+                if (!isClosingTag && _ignoredTags.Contains(tagName))
+                {
+                    ignoreContent = true;
+                }
+
+                // Check if we're closing an ignored tag and stop ignoring content
+                if (isClosingTag && _ignoredTags.Contains(tagName))
+                {
+                    ignoreContent = false;
+                    position = endTag + 1; // Move past the closing tag
+                    continue; // Skip processing for the ignored tag
+                }
+
+                // If content is currently being ignored, skip further processing
+                if (ignoreContent)
+                {
+                    position = endTag + 1; // Move past the current tag and continue parsing
+                    continue;
+                }
+
 
                 switch (tagName)
                 {
@@ -111,10 +161,13 @@ public class ConversionService
                         if (!isClosingTag)
                         {
                             listIndentLevel++;
+                            listTypeStack.Push(tagName); // Push the current list type to the stack
+                            firstListItem = true; // Reset the flag for the new list
                         }
                         else
                         {
                             listIndentLevel--;
+                            listTypeStack.Pop(); // Pop the stack when closing the list
                             markdown.AppendLine();
                         }
                         break;
@@ -122,7 +175,17 @@ public class ConversionService
                     case "li":
                         if (!isClosingTag)
                         {
-                            markdown.Append(new string(' ', listIndentLevel * 2) + (tagName == "ul" ? "* " : "1. "));
+                            // If it's the first list item, insert a line break before the item
+                            if (firstListItem)
+                            {
+                                markdown.AppendLine(); // Add a line break before the first list item
+                                firstListItem = false; // After the first list item, set flag to false
+                            }
+                            // Get the current list type from the stack
+                            string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
+
+                            // Append the appropriate list marker (* for ul, 1. for ol)
+                            markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
                         }
                         if (isClosingTag)
                         {
@@ -133,11 +196,17 @@ public class ConversionService
                     case "blockquote":
                         if (!isClosingTag)
                         {
-                            markdown.Append("> ");
+                            blockquoteDepth++; // Increase depth on opening blockquote
+                            markdown.AppendLine().Append(new string('>', blockquoteDepth) + " ");
                         }
                         if (isClosingTag)
                         {
-                            markdown.AppendLine().AppendLine(); // Ensure line break after blockquote
+                            markdown.AppendLine(); // Line break after closing blockquote
+                            if (blockquoteDepth > 1)
+                            {
+                                markdown.Append("> ");
+                            }
+                            blockquoteDepth--; // Decrease depth on closing blockquote
                         }
                         break;
 
@@ -195,13 +264,12 @@ public class ConversionService
                         string alt = ExtractAttribute(tag, "alt");
                         markdown.Append($"![{alt}]({src})");
                         break;
-
                     case "br":
                         markdown.AppendLine(); // Line break for <br> tag
                         break;
 
                     case "hr":
-                        markdown.AppendLine("---").AppendLine(); // Horizontal rule in Markdown
+                        markdown.AppendLine().AppendLine("---"); // Horizontal rule in Markdown
                         break;
 
                     case "table":
@@ -297,23 +365,36 @@ public class ConversionService
             }
             else
             {
-                // Append normal content
-                markdown.Append(normalizedHtml[position]);
+                // If we are not inside ignored content, append normal content
+                if (!ignoreContent)
+                {
+                    markdown.Append(normalizedHtml[position]);
+                }
                 position++;
             }
         }
 
         // After processing, remove leading spaces from each line
         string[] lines = markdown.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        //checks if generated string has linebreaks at end
         bool endsWithLineBreak = markdown.ToString().EndsWith("\r\n") || markdown.ToString().EndsWith("\n");
-        if (lines.Count() == 1)
+        if (lines.Length == 1)
         {
             return markdown.ToString();
         }
         StringBuilder result = new StringBuilder();
         foreach (var line in lines)
         {
-            result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
+            if (line.TrimStart().StartsWith('~'))
+            {
+                // Replace only the leading instances of ~ with spaces
+                string modifiedLine = Regex.Replace(line.TrimStart(), @"^~+", match => new string(' ', match.Length));
+                result.AppendLine(modifiedLine); // Remove leading spaces but keep line breaks
+            }
+            else
+            {
+                result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
+            }
         }
 
         string finalString = result.ToString();
@@ -331,6 +412,11 @@ public class ConversionService
         return finalString;
     }
 
+    /// <summary>
+    /// Normalize the html except spaces between tags
+    /// </summary>
+    /// <param name="html"></param>
+    /// <returns></returns>
     private string NormalizeHtml(string html)
     {
         // Step 1: Remove line breaks and excess spacing from HTML input
@@ -346,7 +432,12 @@ public class ConversionService
         return normalizedHtml.Trim(); // Return the trimmed and normalized HTML
     }
 
-    // Method to extract attributes from a tag
+    /// <summary>
+    /// Method to extract attributes from a tag
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="attribute"></param>
+    /// <returns></returns>
     private string ExtractAttribute(string tag, string attribute)
     {
         string pattern = $@"{attribute}\s*=\s*[""']([^""']+)[""']";
@@ -354,7 +445,12 @@ public class ConversionService
         return match.Success ? match.Groups[1].Value : string.Empty;
     }
 
-    // Method to extract inner content of a tag, needed for elements like <button>
+    /// <summary>
+    /// Method to extract inner content of a tag, needed for elements like 
+    /// </summary>
+    /// <param name="html"></param>
+    /// <param name="position"></param>
+    /// <returns></returns>
     private string ExtractInnerContent(string html, ref int position)
     {
         int startContent = html.IndexOf('>', position) + 1;
@@ -363,7 +459,10 @@ public class ConversionService
         return html.Substring(startContent, endContent - startContent).Trim();
     }
 
-    // Method to log errors
+    /// <summary>
+    /// Method to log errors
+    /// </summary>
+    /// <param name="message"></param>
     private void LogError(string message)
     {
         _errorLogs.Add(message);
