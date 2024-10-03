@@ -385,7 +385,7 @@ public class ConversionService
         StringBuilder result = new StringBuilder();
         foreach (var line in lines)
         {
-            if (line.StartsWith('~'))
+            if (line.TrimStart().StartsWith('~'))
             {
                 // Replace only the leading instances of ~ with spaces
                 string modifiedLine = Regex.Replace(line.TrimStart(), @"^~+", match => new string(' ', match.Length));
