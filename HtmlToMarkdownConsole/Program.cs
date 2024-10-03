@@ -1,4 +1,6 @@
 ﻿
+using HtmlToMarkdownService;
+
 namespace HtmlToMarkdownConsole
 {
     public class Program
@@ -56,7 +58,10 @@ namespace HtmlToMarkdownConsole
 <form>
   <input type='text' placeholder='Enter text' />
   <button>Submit</button>
-</form>";
+</form>
+
+<ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>
+";
 
                 var result = conversionService.ConvertHtmlToMarkdown(html);
                 Console.WriteLine("Markdown Output:");

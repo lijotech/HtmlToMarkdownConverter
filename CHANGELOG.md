@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## v1.0.7 [Unreleased]
+- Adds ignore tags like (`head`,`title`,`script`,`style`)
 - Fix the self closing tag of `<br/>`
 - Fix the nested issue of BlockQuote
 - Fix the ordered list syntax not visible issue.
+- Fix the indendation issue for `ul`, `ol`.
 
 ### Added
 

@@ -192,7 +192,7 @@ public class ConversionServiceTests
     {
         var conversionService = new ConversionService();
 
-        Assert.Equal("\r\n* Item 1\r\n* Item 2\r\n* Item 3\r\n\r\n",
+        Assert.Equal("\r\n * Item 1\r\n * Item 2\r\n * Item 3\r\n\r\n",
             conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>"));
     }
 
@@ -201,7 +201,69 @@ public class ConversionServiceTests
     {
         var conversionService = new ConversionService();
 
-        Assert.Equal("\r\n1. Item 1\r\n1. Item 2\r\n1. Item 3\r\n\r\n",
+        Assert.Equal("\r\n 1. Item 1\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
             conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>"));
+    }
+
+
+    [Fact]
+    public void ConvertsNestedUnOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n * Item 1\r\n  1. Item 1\r\n  1. Item 2\r\n  1. Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>"));
+    }
+    [Fact]
+    public void ConvertsNestedOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n 1. Item 1\r\n  * Item 1\r\n  * Item 2\r\n  * Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>"));
+    }
+
+    [Fact]
+    public void TestEmptyDiv()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("", conversionService.ConvertHtmlToMarkdown("<div></div>"));
+    }
+
+    [Fact]
+    public void TestWithBody()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<html><head><title>Title</title><style>some style</style></head><body>Body</body></html>"));
+    }
+
+    [Fact]
+    public void TestWithStyle()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<style>some style</style>Body"));
+    }
+
+    [Fact]
+    public void TestWithScript()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<script>sdfdsf</script>Body"));
+    }
+
+    [Fact]
+    public void TestCustomTag()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("custom tag content",
+            conversionService.ConvertHtmlToMarkdown("<xyz>custom tag content</xyz>"));
     }
 }

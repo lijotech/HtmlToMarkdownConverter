@@ -9,7 +9,13 @@ namespace HtmlToMarkdownService;
 public class ConversionService
 {
     private List<string> _errorLogs = new List<string>();
-    private int listIndentLevel = 0;  // Track indentation level for nested lists
+    private HashSet<string> _ignoredTags;
+
+    /// <inheritdoc/>
+    public ConversionService()
+    {
+        _ignoredTags = new HashSet<string> { "head", "title", "style", "script" }; // Tags to ignore
+    }
 
     /// <summary>
     /// Main method to convert HTML to Markdown
@@ -68,6 +74,9 @@ public class ConversionService
         int blockquoteDepth = 0; // Track blockquote nesting level
         Stack<string> listTypeStack = new Stack<string>(); // Stack to track parent list types
         bool firstListItem = true; // Flag to track the first <li> in each list
+        int listIndentLevel = 0;  // Track indentation level for nested lists
+        bool ignoreContent = false; // Flag to track whether content should be ignored
+
         while (position < normalizedHtml.Length)
         {
             if (normalizedHtml[position] == '<')
@@ -98,6 +107,28 @@ public class ConversionService
                         tagName = tagName.Substring(1);
                     }
                 }
+
+                // Check if we need to start ignoring content for certain tags
+                if (!isClosingTag && _ignoredTags.Contains(tagName))
+                {
+                    ignoreContent = true;
+                }
+
+                // Check if we're closing an ignored tag and stop ignoring content
+                if (isClosingTag && _ignoredTags.Contains(tagName))
+                {
+                    ignoreContent = false;
+                    position = endTag + 1; // Move past the closing tag
+                    continue; // Skip processing for the ignored tag
+                }
+
+                // If content is currently being ignored, skip further processing
+                if (ignoreContent)
+                {
+                    position = endTag + 1; // Move past the current tag and continue parsing
+                    continue;
+                }
+
 
                 switch (tagName)
                 {
@@ -154,7 +185,7 @@ public class ConversionService
                             string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
 
                             // Append the appropriate list marker (* for ul, 1. for ol)
-                            markdown.Append(new string(' ', listIndentLevel * 2) + (parentListType == "ul" ? "* " : "1. "));
+                            markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
                         }
                         if (isClosingTag)
                         {
@@ -169,7 +200,7 @@ public class ConversionService
                             markdown.AppendLine().Append(new string('>', blockquoteDepth) + " ");
                         }
                         if (isClosingTag)
-                        {                            
+                        {
                             markdown.AppendLine(); // Line break after closing blockquote
                             if (blockquoteDepth > 1)
                             {
@@ -334,8 +365,11 @@ public class ConversionService
             }
             else
             {
-                // Append normal content
-                markdown.Append(normalizedHtml[position]);
+                // If we are not inside ignored content, append normal content
+                if (!ignoreContent)
+                {
+                    markdown.Append(normalizedHtml[position]);
+                }
                 position++;
             }
         }
@@ -351,7 +385,16 @@ public class ConversionService
         StringBuilder result = new StringBuilder();
         foreach (var line in lines)
         {
-            result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
+            if (line.StartsWith('~'))
+            {
+                // Replace only the leading instances of ~ with spaces
+                string modifiedLine = Regex.Replace(line.TrimStart(), @"^~+", match => new string(' ', match.Length));
+                result.AppendLine(modifiedLine); // Remove leading spaces but keep line breaks
+            }
+            else
+            {
+                result.AppendLine(line.TrimStart()); // Remove leading spaces but keep line breaks
+            }
         }
 
         string finalString = result.ToString();
