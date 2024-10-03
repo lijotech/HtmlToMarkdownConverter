@@ -1,3 +1,4 @@
+using HtmlToMarkdownService;
 namespace HtmlToMarkdownTests;
 
 public class ConversionServiceTests
@@ -79,10 +80,10 @@ public class ConversionServiceTests
     }
 
     [Theory]
-    [InlineData("![Alt Text](proto:path)","<img src=\"proto:path\" alt=\"Alt Text\" />")]
-    [InlineData("![](proto:path)","<img src=\"proto:path\" />")]
-    [InlineData("![Alt Text]()","<img alt=\"Alt Text\" />")]
-    public void ConvertsImage(string expected,string imageHtmlInput)
+    [InlineData("![Alt Text](proto:path)", "<img src=\"proto:path\" alt=\"Alt Text\" />")]
+    [InlineData("![](proto:path)", "<img src=\"proto:path\" />")]
+    [InlineData("![Alt Text]()", "<img alt=\"Alt Text\" />")]
+    public void ConvertsImage(string expected, string imageHtmlInput)
     {
         var conversionService = new ConversionService();
 
@@ -105,17 +106,164 @@ public class ConversionServiceTests
     }
 
     [Theory]
-    [InlineData("# Heading Text\r\n\r\n","<h1>Heading Text</h1>")]
-    [InlineData("## Heading Text\r\n\r\n","<h2>Heading Text</h2>")]
-    [InlineData("### Heading Text\r\n\r\n","<h3>Heading Text</h3>")]
-    [InlineData("#### Heading Text\r\n\r\n","<h4>Heading Text</h4>")]
-    [InlineData("##### Heading Text\r\n\r\n","<h5>Heading Text</h5>")]
-    [InlineData("###### Heading Text\r\n\r\n","<h6>Heading Text</h6>")]
-   
+    [InlineData("# Heading Text\r\n\r\n", "<h1>Heading Text</h1>")]
+    [InlineData("## Heading Text\r\n\r\n", "<h2>Heading Text</h2>")]
+    [InlineData("### Heading Text\r\n\r\n", "<h3>Heading Text</h3>")]
+    [InlineData("#### Heading Text\r\n\r\n", "<h4>Heading Text</h4>")]
+    [InlineData("##### Heading Text\r\n\r\n", "<h5>Heading Text</h5>")]
+    [InlineData("###### Heading Text\r\n\r\n", "<h6>Heading Text</h6>")]
+
     public void ConvertsHeading(string expected, string htmlInput)
     {
         var conversionService = new ConversionService();
 
         Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
+    }
+
+    [Fact]
+    public void ConvertsHorizontalRule()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<hr />";
+        var expectedMarkdown = "\r\n---\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
+
+    [Fact]
+    public void ConvertsParagraph()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<p>Paragraph Text</p>";
+        var expectedMarkdown = "Paragraph Text\r\n\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
+
+    [Theory]
+    [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br/>Text</p>")]
+    [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br>Text</p>")]
+    public void ConvertsBreak(string expected, string htmlInput)
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
+    }
+
+    [Theory]
+    [InlineData("Paragraph Text", "<div>Paragraph Text</div>")]
+    [InlineData("Paragraph Text\r\n", "<div>Paragraph Text<br/></div>")]
+    public void ConvertsSingleBreakInsideDiv(string expected, string htmlInput)
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal(expected, conversionService.ConvertHtmlToMarkdown(htmlInput));
+    }
+
+    [Fact]
+    public void ConvertsBlockQuote()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n> Quote Text\r\n", conversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text</blockquote>"));
+    }
+
+    [Fact]
+    public void ConvertsNestedBlockQuote()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n> Quote Text\r\n>> Inner Quote Text\r\n> More Text\r\n",
+            conversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text<blockquote>Inner Quote Text</blockquote>More Text</blockquote>"));
+    }
+
+    [Fact]
+    public void ConvertsUnOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n * Item 1\r\n * Item 2\r\n * Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>"));
+    }
+
+    [Fact]
+    public void ConvertsOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n 1. Item 1\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>"));
+    }
+
+
+    [Fact]
+    public void ConvertsNestedUnOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n * Item 1\r\n  1. Item 1\r\n  1. Item 2\r\n  1. Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>"));
+    }
+    [Fact]
+    public void ConvertsNestedOrderedList()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("\r\n 1. Item 1\r\n  * Item 1\r\n  * Item 2\r\n  * Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>"));
+    }
+
+    [Fact]
+    public void TestEmptyDiv()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("", conversionService.ConvertHtmlToMarkdown("<div></div>"));
+    }
+
+    [Fact]
+    public void TestWithBody()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<html><head><title>Title</title><style>some style</style></head><body>Body</body></html>"));
+    }
+
+    [Fact]
+    public void TestWithStyle()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<style>some style</style>Body"));
+    }
+
+    [Fact]
+    public void TestWithScript()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("Body",
+            conversionService.ConvertHtmlToMarkdown("<script>sdfdsf</script>Body"));
+    }
+
+    [Fact]
+    public void TestCustomTag()
+    {
+        var conversionService = new ConversionService();
+
+        Assert.Equal("custom tag content",
+            conversionService.ConvertHtmlToMarkdown("<xyz>custom tag content</xyz>"));
     }
 }
