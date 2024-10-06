@@ -76,6 +76,7 @@ public class ConversionService
         bool firstListItem = true; // Flag to track the first <li> in each list
         int listIndentLevel = 0;  // Track indentation level for nested lists
         bool ignoreContent = false; // Flag to track whether content should be ignored
+        bool headerProcessed = false;  // To track if table header has been processed
 
         while (position < normalizedHtml.Length)
         {
@@ -276,6 +277,7 @@ public class ConversionService
                         if (!isClosingTag)
                         {
                             currentColumnCount = 0; // Reset the column count at the start of a new table
+                            headerProcessed = false;
                             markdown.AppendLine(); // Ensure a line break before the new table
                         }
                         if (isClosingTag)
@@ -287,19 +289,32 @@ public class ConversionService
                     case "tr":
                         if (isClosingTag)
                         {
-                            markdown.Append("|").AppendLine(); // Ensure line break after each table row
+                            // If the row had <th> tags but no <thead>, add the separator after processing the row
+                            if (!headerProcessed && currentColumnCount > 0)
+                            {
+                                markdown.Append("|").AppendLine();
+                                markdown.Append("|");
+                                for (int i = 0; i < currentColumnCount; i++)
+                                {
+                                    markdown.Append(" --- |");
+                                }
+                                markdown.AppendLine(); // End the separator line
+                                headerProcessed = true;  // Mark header as processed
+                            }
+                            else
+                                markdown.Append("|").AppendLine(); // Ensure line break after each table row
                         }
                         break;
 
                     case "th":
                         if (!isClosingTag)
                         {
-                            if (inTableHeader)
+                            if (inTableHeader || !headerProcessed)
                             {
                                 currentColumnCount++;
                             }
                             markdown.Append("| ");
-                        }                                              
+                        }
                         break;
                     case "td":
                         if (!isClosingTag)
@@ -314,13 +329,17 @@ public class ConversionService
                         }
                         else if (isClosingTag && inTableHeader)
                         {
-                            // Generate the separator line dynamically based on the number of columns in the current table
-                            markdown.Append("|");
-                            for (int i = 0; i < currentColumnCount; i++)
+                            if (!headerProcessed && currentColumnCount > 0)
                             {
-                                markdown.Append(" --- |");
+                                // Generate the separator line dynamically based on the number of columns in the current table
+                                markdown.Append("|");
+                                for (int i = 0; i < currentColumnCount; i++)
+                                {
+                                    markdown.Append(" --- |");
+                                }
+                                markdown.AppendLine(); // End the separator line
+                                headerProcessed = true;  // Mark header as processed
                             }
-                            markdown.AppendLine(); // End the separator line
                             inTableHeader = false; // Reset the flag after processing the header
                         }
                         break;
