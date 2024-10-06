@@ -276,6 +276,7 @@ public class ConversionService
                         if (!isClosingTag)
                         {
                             currentColumnCount = 0; // Reset the column count at the start of a new table
+                            markdown.AppendLine(); // Ensure a line break before the new table
                         }
                         if (isClosingTag)
                         {
@@ -286,24 +287,19 @@ public class ConversionService
                     case "tr":
                         if (isClosingTag)
                         {
-                            markdown.AppendLine(); // Ensure line break after each table row
+                            markdown.Append("|").AppendLine(); // Ensure line break after each table row
                         }
                         break;
-
 
                     case "th":
                         if (!isClosingTag)
                         {
                             if (inTableHeader)
                             {
-                                markdown.Append("| ");
                                 currentColumnCount++;
                             }
-                        }
-                        else
-                        {
-                            inTableHeader = true;
-                        }
+                            markdown.Append("| ");
+                        }                                              
                         break;
                     case "td":
                         if (!isClosingTag)
@@ -312,7 +308,11 @@ public class ConversionService
                         }
                         break;
                     case "thead":
-                        if (isClosingTag && inTableHeader)
+                        if (!isClosingTag)
+                        {
+                            inTableHeader = true; // Mark that we're inside the table header section
+                        }
+                        else if (isClosingTag && inTableHeader)
                         {
                             // Generate the separator line dynamically based on the number of columns in the current table
                             markdown.Append("|");
@@ -321,7 +321,6 @@ public class ConversionService
                                 markdown.Append(" --- |");
                             }
                             markdown.AppendLine(); // End the separator line
-
                             inTableHeader = false; // Reset the flag after processing the header
                         }
                         break;
