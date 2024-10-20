@@ -63,7 +63,6 @@ public class ConversionServiceTests
         Assert.Equal(expectedMarkdown, result);
     }
 
-
     [Fact]
     public void ConvertsItalic()
     {
@@ -205,6 +204,35 @@ public class ConversionServiceTests
             conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>"));
     }
 
+
+    [Fact]
+    public void ConvertsTable()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<table>\r\n  <thead>\r\n    <tr>\r\n      <th>Header 1</th>\r\n      <th>Header 2</th>\r\n      <th>Header 3</th>\r\n    </tr>\r\n  </thead>\r\n  <tbody>\r\n    <tr>\r\n      <td>Data 1</td>\r\n      <td>Data 2</td>\r\n      <td>Data 3</td>\r\n    </tr>\r\n  </tbody>\r\n</table>";
+        var expectedMarkdown = "\r\n| Header 1 | Header 2 | Header 3 |\r\n| --- | --- | --- |\r\n| Data 1 | Data 2 | Data 3 |\r\n\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
+    [Fact]
+    public void ConvertsTable2()
+    {
+        // Arrange
+        var conversionService = new ConversionService();
+        var html = "<table>\r\n   <thead>\r\n      <tr>\r\n         <th>Header 1</th>\r\n         <th>Header 3</th>\r\n         <th>Header 2</th>\r\n      </tr>\r\n   </thead>\r\n   <tbody>\r\n      <tr>\r\n         <td>Data 1</td>\r\n         <td>Data 3</td>\r\n         <td>Data 2</td>\r\n      </tr>\r\n   </tbody>\r\n</table>";
+        var expectedMarkdown = "\r\n| Header 1 | Header 3 | Header 2 |\r\n| --- | --- | --- |\r\n| Data 1 | Data 3 | Data 2 |\r\n\r\n";
+
+        // Act
+        var result = conversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result);
+    }
 
     [Fact]
     public void ConvertsNestedUnOrderedList()

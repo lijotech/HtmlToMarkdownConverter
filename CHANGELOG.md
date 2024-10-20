@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
-## v1.0.8 [Unreleased]
+## v1.0.8 (2024-10-20)
+- Adds benchmark analysis for the method `ConvertHtmlToMarkdown`
+- Fix issues of the table markdown
+- Fix issues of the table seperator without `thead`
 
 ## v1.0.7 (2024-10-03)
 - Adds ignore tags like (`head`,`title`,`script`,`style`)

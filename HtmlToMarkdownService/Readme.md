@@ -1,6 +1,6 @@
 ﻿# HTML to Markdown Converter
 
-**HTML to Markdown Converter** is a powerful tool designed to seamlessly convert HTML strings into Markdown format. This tool simplifies the process of transforming HTML content into clean, readable Markdown, making it perfect for developers, writers, and content creators.
+**HTML to Markdown Converter** is a powerful tool designed to seamlessly convert HTML strings into Markdown format.  This library has no external dependencies, making it lightweight and easy to integrate into your projects. This tool simplifies the process of transforming HTML content into clean, readable Markdown, making it perfect for developers, writers, and content creators.
 
 ## Features
 
@@ -13,7 +13,7 @@
 To install the tool, use the following command:
 
 ```sh
-Install-Package HtmlToMarkdownService
+Install-Package HtmlToMarkdownConverter
 
 ```
 
