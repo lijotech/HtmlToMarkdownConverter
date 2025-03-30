@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## v1.0.9 [UNRELEASED]
 - Adds badges to readme file
 - Enhance the sub project names
-- Fix for nested list
+- Fix for nested list with additional space
+- Add web app to provide real-time convertion with web page
 
 ## v1.0.8 (2024-10-20)
 - Adds benchmark analysis for the method `ConvertHtmlToMarkdown`
