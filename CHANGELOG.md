@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
-## v1.0.9 [UNRELEASED]
+## v1.0.9 (2025-03-30)
 - Adds badges to readme file
 - Enhance the sub project names
 - Fix for nested list with additional space
