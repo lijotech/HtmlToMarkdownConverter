@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build HtmlToMarkdown.App/HtmlToMarkdown.App.csproj --configuration Release
 
       - name: dotnet publish
         run: dotnet publish HtmlToMarkdown.App/HtmlToMarkdown.App.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -54,5 +54,5 @@ jobs:
         with:
           app-name: 'HtmlToMarkdownConverter'
           slot-name: 'Production'
-          package: .
+          package: ${{env.DOTNET_ROOT}}/myapp
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7672F373B59247F08B00A9829824A0D3 }}
