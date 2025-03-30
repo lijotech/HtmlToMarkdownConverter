@@ -239,16 +239,17 @@ public class ConversionServiceTests
     {
         var conversionService = new ConversionService();
 
-        Assert.Equal("\r\n * Item 1\r\n  1. Item 1\r\n  1. Item 2\r\n  1. Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n",
-            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>"));
+        Assert.Equal("\r\n * Item 1\r\n   1. Sub Item 1\r\n   1. Sub Item 2\r\n   1. Sub Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ul><li>Item 1<ol><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>"));
     }
+
     [Fact]
     public void ConvertsNestedOrderedList()
     {
         var conversionService = new ConversionService();
 
-        Assert.Equal("\r\n 1. Item 1\r\n  * Item 1\r\n  * Item 2\r\n  * Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
-            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>"));
+        Assert.Equal("\r\n 1. Item 1\r\n   * Sub Item 1\r\n   * Sub Item 2\r\n   * Sub Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
+            conversionService.ConvertHtmlToMarkdown("<ol><li>Item 1<ul><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>"));
     }
 
     [Fact]

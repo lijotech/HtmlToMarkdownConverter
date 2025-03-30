@@ -8,11 +8,11 @@
 		<PackageId>HtmlToMarkdownConverter</PackageId>
 		<Title>HtmlToMarkdownConverter</Title>
 		<Description>HtmlToMarkdownConverter is a Html to Markdown converter library to use with C# applications</Description>
-		<Copyright>Copyright © 2024</Copyright>
+		<Copyright>Copyright © 2025</Copyright>
 		<PackageTags>HtmlToMarkdown; markdown converter; htmltomd; html converter; html2markdown; converthtml;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
-		<Version>1.0.8</Version>
+		<Version>1.0.9</Version>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReleaseNotes>Minor bug fixes and code enhancements</PackageReleaseNotes>

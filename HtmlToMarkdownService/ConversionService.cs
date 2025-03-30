@@ -186,7 +186,12 @@ public class ConversionService
                             string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
 
                             // Append the appropriate list marker (* for ul, 1. for ol)
-                            markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
+                            if (listIndentLevel > 1) //if indent level is more than one add a space before syntax (* or 1)
+                            {
+                                markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? " * " : " 1. "));
+                            }
+                            else
+                                markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
                         }
                         if (isClosingTag)
                         {

@@ -1,5 +1,10 @@
 # HtmlToMarkdownConverter
 
+![Version](https://img.shields.io/badge/version-1.0.8-blue)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+
 HtmlToMarkdownConverter is a .NET library that converts HTML content to Markdown format. This library has no external dependencies, making it lightweight and easy to integrate into your projects. The repository includes the main library, a console application for testing, and a unit test project to verify supported conversions.
 
 ## Installation
