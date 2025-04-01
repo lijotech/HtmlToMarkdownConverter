@@ -10,12 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="HtmlToMarkdownConverter" Version="1.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HtmlToMarkdownService\HtmlToMarkdown.Service.csproj" />
   </ItemGroup>
 
 </Project>

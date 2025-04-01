@@ -12,10 +12,10 @@
 		<PackageTags>HtmlToMarkdown; markdown converter; htmltomd; html converter; html2markdown; converthtml;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
-		<Version>1.0.9</Version>
+		<Version>1.1.0</Version>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReleaseNotes>Minor bug fixes and code enhancements</PackageReleaseNotes>
+		<PackageReleaseNotes></PackageReleaseNotes>
 	</PropertyGroup>
 	<PropertyGroup>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
