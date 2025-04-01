@@ -21,7 +21,7 @@ namespace HtmlToMarkdown.App.Controller
 
                 return new JsonResult(new { markdown = markdownContent, errors = string.Join(", ", errorLogs) });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred during conversion.");
             }
@@ -29,7 +29,7 @@ namespace HtmlToMarkdown.App.Controller
 
         public class HtmlInputModel
         {
-            public string Html { get; set; }
+            public string? Html { get; set; }
         }
     }
 }
