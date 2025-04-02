@@ -4,35 +4,150 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6">
-            <textarea id="htmlInput" class="form-control resizeable-block" rows="15" placeholder="Enter HTML here"></textarea>
+@section Styles {
+    <!-- Include CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    <style>
+        .split-container {
+            display: flex;
+            height: 60vh;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .split-pane {
+            width: 50%;
+            overflow: auto;
+        }
+
+        .splitter {
+            width: 5px;
+            cursor: col-resize;
+            background: #ddd;
+            height: 100%;
+        }
+
+        .CodeMirror {
+            height: 100%; /* Make CodeMirror fill the container */
+            font-family: monospace;
+        }
+
+        .textarea-buttons {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-container {
+            position: relative;
+            height: 100%;
+        }
+
+    </style>
+}
+<div class="split-container">
+    <!-- HTML Input Editor -->
+    <div class="split-pane" id="editorPane">
+        <div class="code-container">
+            <textarea id="htmlInput" placeholder="Enter HTML here"></textarea>
+            <div class="textarea-buttons">
+                <button class="btn btn-secondary btn-sm copy-button" onclick="copyFromEditor(htmlEditor)">Copy</button>
+                <button class="btn btn-danger btn-sm clear-button" onclick="htmlEditor.setValue('')">Clear</button>
+            </div>
         </div>
-        <div class="col-md-6">
-            <textarea id="markdownOutput" class="form-control resizeable-block" rows="15" readonly placeholder="Markdown output will appear here"></textarea>
+    </div>
+
+    <!-- Splitter -->
+    <div class="splitter" id="splitter"></div>
+
+    <!-- Markdown Output Editor -->
+    <div class="split-pane" id="outputPane">
+        <div class="code-container">
+            <textarea id="markdownOutput" readonly placeholder="Markdown output will appear here"></textarea>
+            <div class="textarea-buttons">
+                <button class="btn btn-secondary btn-sm copy-button" onclick="copyFromEditor(markdownEditor)">Copy</button>
+                <button class="btn btn-danger btn-sm clear-button" onclick="markdownEditor.setValue('')">Clear</button>
+            </div>
         </div>
-    </div>
-    <div class="mt-3 text-center">
-        <button id="convertButton" class="btn btn-primary">Convert</button>
-    </div>
-    <div class="mt-3">
-        <p id="errorLogs" class="text-danger"></p>
-    </div>
-    @Html.AntiForgeryToken()
-    <!-- Description Section -->
-    <div class="mt-5 text-center">
-        <p>Conversion is provided by the <a href="https://github.com/lijotech/HtmlToMarkdownConverter" target="_blank">GitHub project</a>.</p>
-        <p>If you encounter any issues, please report them <a href="https://github.com/lijotech/HtmlToMarkdownConverter/issues" target="_blank">here</a>.</p>
     </div>
 </div>
 
+<div class="text-center mt-3">
+    <button id="convertButton" class="btn btn-primary">Convert</button>
+</div>
+<div class="mt-3 text-center">
+    <p id="errorLogs" class="text-danger"></p>
+</div>
+
+@Html.AntiForgeryToken()
+<!-- Description Section -->
+<div class="mt-5 text-center">
+    <p>Conversion is provided by the <a href="https://github.com/lijotech/HtmlToMarkdownConverter" target="_blank">GitHub project</a>.</p>
+    <p>If you encounter any issues, please report them <a href="https://github.com/lijotech/HtmlToMarkdownConverter/issues" target="_blank">here</a>.</p>
+</div>
+
+
 @section Scripts {
+    <!-- Include CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/markdown/markdown.min.js"></script>
+
     <script>
+        let htmlEditor, markdownEditor;
+
+        // Initialize CodeMirror editors
+        document.addEventListener("DOMContentLoaded", function () {
+            htmlEditor = CodeMirror.fromTextArea(document.getElementById("htmlInput"), {
+                lineNumbers: true,
+                mode: "htmlmixed",
+                theme: "dracula",
+                lineWrapping: true
+            });
+
+            markdownEditor = CodeMirror.fromTextArea(document.getElementById("markdownOutput"), {
+                lineNumbers: true,
+                readOnly: true,
+                mode: "markdown",
+                theme: "dracula",
+                lineWrapping: true
+            });
+
+            // Enable resizing with the splitter
+            const splitter = document.getElementById("splitter");
+            const editorPane = document.getElementById("editorPane");
+            const outputPane = document.getElementById("outputPane");
+
+            let isResizing = false;
+
+            splitter.addEventListener("mousedown", function (e) {
+                isResizing = true;
+                document.body.style.cursor = "col-resize";
+            });
+
+            document.addEventListener("mousemove", function (e) {
+                if (!isResizing) return;
+                const containerWidth = document.querySelector(".split-container").offsetWidth;
+                const newEditorWidth = (e.clientX / containerWidth) * 100;
+                editorPane.style.width = `${newEditorWidth}%`;
+                outputPane.style.width = `${100 - newEditorWidth}%`;
+            });
+
+            document.addEventListener("mouseup", function () {
+                isResizing = false;
+                document.body.style.cursor = "default";
+            });
+        });
+
+
+        // AJAX call to convert HTML to Markdown
         $(document).ready(function () {
             $('#convertButton').click(function () {
-                var htmlContent = $('#htmlInput').val();
-                if (!htmlContent.trim()) { 
+                var htmlContent = htmlEditor.getValue();
+                if (!htmlContent.trim()) {
                     $('#errorLogs').text('Please enter HTML content before converting.');
                     return;
                 }
@@ -45,8 +160,8 @@
                         'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                     },
                     success: function (response) {
-                        $('#markdownOutput').val(response.markdown);
-                        $('#errorLogs').text(response.errors);
+                        markdownEditor.setValue(response.markdown);
+                        $('#errorLogs').text(response.errors || '');
                     },
                     error: function () {
                         $('#errorLogs').text('An error occurred during the conversion.');
@@ -54,5 +169,14 @@
                 });
             });
         });
+
+        // Function to copy content from a CodeMirror editor
+        function copyFromEditor(editor) {
+            navigator.clipboard.writeText(editor.getValue()).then(function () {
+                console.log("Copied to clipboard!");
+            }, function () {
+                alert("Failed to copy!");
+            });
+        }
     </script>
 }
