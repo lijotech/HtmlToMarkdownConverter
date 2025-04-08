@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using HtmlToMarkdownService;
+using HtmlToMarkdown.Service;
 public class HtmlToMarkdownBenchmark
 {
     private string html100;
@@ -22,40 +22,35 @@ public class HtmlToMarkdownBenchmark
     [Benchmark]
     public void ConvertHtml100()
     {
-        ConversionService conversionService = new ConversionService();
-        conversionService.ConvertHtmlToMarkdown(html100);
+        ConversionService.ConvertHtmlToMarkdown(html100);
     }
 
     // Method to benchmark the conversion of 500 characters of HTML to Markdown
     [Benchmark]
     public void ConvertHtml500()
     {
-        ConversionService conversionService = new ConversionService();
-        conversionService.ConvertHtmlToMarkdown(html500);
+        ConversionService.ConvertHtmlToMarkdown(html500);
     }
 
     // Method to benchmark the conversion of 1000 characters of HTML to Markdown
     [Benchmark]
     public void ConvertHtml1000()
     {
-        ConversionService conversionService = new ConversionService();
-        conversionService.ConvertHtmlToMarkdown(html1000);
+        ConversionService.ConvertHtmlToMarkdown(html1000);
     }
 
     // Method to benchmark the conversion of 5000 characters of HTML to Markdown
     [Benchmark]
     public void ConvertHtml5000()
     {
-        ConversionService conversionService = new ConversionService();
-        conversionService.ConvertHtmlToMarkdown(html5000);
+        ConversionService.ConvertHtmlToMarkdown(html5000);
     }
 
     // Method to benchmark the conversion of 10000 characters of HTML to Markdown
     [Benchmark]
     public void ConvertHtml10000()
     {
-        ConversionService conversionService = new ConversionService();
-        conversionService.ConvertHtmlToMarkdown(html10000);
+        ConversionService.ConvertHtmlToMarkdown(html10000);
     }
 
     // Generate sample HTML with specified character length

@@ -1,68 +1,48 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace HtmlToMarkdownService;
+namespace HtmlToMarkdown.Service;
 
 /// <summary>
-/// Service class to handle all conversion of html to marldown
+/// Static service class to handle all conversion of HTML to Markdown efficiently.
 /// </summary>
-public class ConversionService
+public static class ConversionService
 {
-    private List<string> _errorLogs = new List<string>();
-    private HashSet<string> _ignoredTags;
-
-    /// <inheritdoc/>
-    public ConversionService()
-    {
-        _ignoredTags = new HashSet<string> { "head", "title", "style", "script" }; // Tags to ignore
-    }
+    /// <summary>
+    /// The contents of this tag are ignored for markdown generation
+    /// </summary>
+    private static readonly HashSet<string> _ignoredTags = new() { "head", "title", "style", "script" };
+    /// <summary>
+    /// Allowed html tags for conversion
+    /// </summary>
+    private static readonly HashSet<string> _allowedTags = new() { "div", "iframe", "input", "label", "button", "span", "i", "em", "br", "hr", "form", "tbody", "table", "thead", "tr", "th", "td", "ul", "ol", "li", "a", "img", "h1", "h2", "h3", "h4", "h5", "h6", "p", "b", "strong", "blockquote", "code" };
 
     /// <summary>
-    /// Main method to convert HTML to Markdown
+    /// Converts HTML to Markdown.
     /// </summary>
-    /// <param name="html"></param>
-    /// <returns></returns>
-    public string ConvertHtmlToMarkdown(string html)
+    /// <param name="html">The HTML input string.</param>
+    /// <returns>Converted Markdown string.</returns>
+    public static ConversionResult ConvertHtmlToMarkdown(string html)
     {
-        if (string.IsNullOrEmpty(html))
-        {
-            LogError("Input HTML string is null or empty.");
-            return string.Empty;
-        }
-
-        StringBuilder markdown = new StringBuilder();
+        List<string> errors = new();
+        if (string.IsNullOrWhiteSpace(html)) return new ConversionResult { Markdown = string.Empty, Errors = errors };
 
         try
         {
-            // Remove unnecessary whitespace
-            html = Regex.Replace(html, @"\s+", " ").Trim();
-
-            // Parse and convert
-            markdown.Append(ParseHtml(html));
+            return new ConversionResult { Markdown = ParseHtml(html, errors), Errors = errors };
         }
         catch (Exception ex)
         {
-            LogError($"Exception occurred: {ex.Message}");
+            errors.Add(ex.Message);
+            return new ConversionResult { Markdown = string.Empty, Errors = errors };
         }
-
-        return markdown.ToString();
     }
 
-    /// <summary>
-    /// List the errors during conversion
-    /// </summary>
-    /// <returns></returns>
-    public List<string> GetErrorLogs()
-    {
-        return _errorLogs;
-    }
 
     /// <summary>
-    /// Method to handle parsing of HTML elements
+    /// Parses HTML content into Markdown.
     /// </summary>
-    /// <param name="html"></param>
-    /// <returns></returns>
-    private string ParseHtml(string html)
+    private static string ParseHtml(string html, List<string> errors)
     {
         // First, normalize the input HTML to remove spaces and line breaks
         string normalizedHtml = NormalizeHtml(html);
@@ -85,7 +65,7 @@ public class ConversionService
                 int endTag = normalizedHtml.IndexOf('>', position);
                 if (endTag == -1)
                 {
-                    LogError("Malformed HTML tag detected.");
+                    errors.Add("Malformed HTML tag detected.");
                     break;
                 }
 
@@ -130,6 +110,12 @@ public class ConversionService
                     continue;
                 }
 
+                if (!_allowedTags.Contains(tagName) && !isSelfClosing && !isClosingTag)
+                {
+                    errors.Add($"Unrecognized tag: {tagName}");
+                    position = endTag + 1;
+                    continue;
+                }
 
                 switch (tagName)
                 {
@@ -217,14 +203,7 @@ public class ConversionService
                         break;
 
                     case "code":
-                        if (!isClosingTag)
-                        {
-                            markdown.Append("`");
-                        }
-                        else
-                        {
-                            markdown.Append("`");
-                        }
+                        markdown.Append(isClosingTag ? "`" : "`");
                         break;
 
                     case "a":
@@ -240,31 +219,15 @@ public class ConversionService
                             position = endContent; // Move position to the end of anchor tag content
                         }
                         break;
-
                     case "b":
                     case "strong":
-                        if (!isClosingTag)
-                        {
-                            markdown.Append("**");
-                        }
-                        else
-                        {
-                            markdown.Append("**");
-                        }
+                        markdown.Append(isClosingTag ? "**" : "**");
                         break;
 
                     case "i":
                     case "em":
-                        if (!isClosingTag)
-                        {
-                            markdown.Append("_");
-                        }
-                        else
-                        {
-                            markdown.Append("_");
-                        }
+                        markdown.Append(isClosingTag ? "_" : "_");
                         break;
-
                     case "img":
                         string src = ExtractAttribute(tag, "src");
                         string alt = ExtractAttribute(tag, "alt");
@@ -279,75 +242,14 @@ public class ConversionService
                         break;
 
                     case "table":
-                        if (!isClosingTag)
-                        {
-                            currentColumnCount = 0; // Reset the column count at the start of a new table
-                            headerProcessed = false;
-                            markdown.AppendLine(); // Ensure a line break before the new table
-                        }
-                        if (isClosingTag)
-                        {
-                            markdown.AppendLine(); // Ensure line break after table
-                        }
-                        break;
-
                     case "tr":
-                        if (isClosingTag)
-                        {
-                            // If the row had <th> tags but no <thead>, add the separator after processing the row
-                            if (!headerProcessed && currentColumnCount > 0)
-                            {
-                                markdown.Append("|").AppendLine();
-                                markdown.Append("|");
-                                for (int i = 0; i < currentColumnCount; i++)
-                                {
-                                    markdown.Append(" --- |");
-                                }
-                                markdown.AppendLine(); // End the separator line
-                                headerProcessed = true;  // Mark header as processed
-                            }
-                            else
-                                markdown.Append("|").AppendLine(); // Ensure line break after each table row
-                        }
+                    case "th":
+                    case "td":
+                    case "thead":
+                    case "tbody":
+                        ProcessTableTag(normalizedHtml, tagName, isClosingTag, ref position, ref markdown, ref currentColumnCount, ref headerProcessed, ref inTableHeader);
                         break;
 
-                    case "th":
-                        if (!isClosingTag)
-                        {
-                            if (inTableHeader || !headerProcessed)
-                            {
-                                currentColumnCount++;
-                            }
-                            markdown.Append("| ");
-                        }
-                        break;
-                    case "td":
-                        if (!isClosingTag)
-                        {
-                            markdown.Append("| ");
-                        }
-                        break;
-                    case "thead":
-                        if (!isClosingTag)
-                        {
-                            inTableHeader = true; // Mark that we're inside the table header section
-                        }
-                        else if (isClosingTag && inTableHeader)
-                        {
-                            if (!headerProcessed && currentColumnCount > 0)
-                            {
-                                // Generate the separator line dynamically based on the number of columns in the current table
-                                markdown.Append("|");
-                                for (int i = 0; i < currentColumnCount; i++)
-                                {
-                                    markdown.Append(" --- |");
-                                }
-                                markdown.AppendLine(); // End the separator line
-                                headerProcessed = true;  // Mark header as processed
-                            }
-                            inTableHeader = false; // Reset the flag after processing the header
-                        }
-                        break;
                     case "form":
                         if (isClosingTag)
                         {
@@ -379,7 +281,7 @@ public class ConversionService
                         break;
 
                     default:
-                        LogError($"Unrecognized tag: {tagName}");
+                        errors.Add($"Unrecognized tag: {tagName}");
                         break;
                 }
 
@@ -399,7 +301,6 @@ public class ConversionService
 
         // After processing, remove leading spaces from each line
         string[] lines = markdown.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-        //checks if generated string has linebreaks at end
         bool endsWithLineBreak = markdown.ToString().EndsWith("\r\n") || markdown.ToString().EndsWith("\n");
         if (lines.Length == 1)
         {
@@ -435,25 +336,83 @@ public class ConversionService
         return finalString;
     }
 
-    /// <summary>
-    /// Normalize the html except spaces between tags
-    /// </summary>
-    /// <param name="html"></param>
-    /// <returns></returns>
-    private string NormalizeHtml(string html)
+    private static void ProcessTableTag(string normalizedHtml, string tagName, bool isClosingTag, ref int position, ref StringBuilder markdown, ref int currentColumnCount, ref bool headerProcessed, ref bool inTableHeader)
     {
-        // Step 1: Remove line breaks and excess spacing from HTML input
-        string normalizedHtml = html
-            .Replace("\n", "")       // Remove newlines
-            .Replace("\r", "")       // Remove carriage returns
-            .Replace("\t", " ");      // Replace tabs with single space
-                                      //.Replace("> <", "><");   // Remove spaces between tags
+        switch (tagName)
+        {
+            case "table":
+                if (!isClosingTag)
+                {
+                    currentColumnCount = 0; // Reset the column count at the start of a new table
+                    headerProcessed = false;
+                    markdown.AppendLine(); // Ensure a line break before the new table
+                }
+                if (isClosingTag)
+                {
+                    markdown.AppendLine(); // Ensure line break after table
+                }
+                break;
 
-        // Step 2: Replace multiple spaces with a single space
-        normalizedHtml = Regex.Replace(normalizedHtml, @"\s{2,}", " ");
+            case "tr":
+                if (isClosingTag)
+                {
+                    // If the row had <th> tags but no <thead>, add the separator after processing the row
+                    if (!headerProcessed && currentColumnCount > 0)
+                    {
+                        markdown.Append("|").AppendLine();
+                        markdown.Append("|");
+                        for (int i = 0; i < currentColumnCount; i++)
+                        {
+                            markdown.Append(" --- |");
+                        }
+                        markdown.AppendLine(); // End the separator line
+                        headerProcessed = true;  // Mark header as processed
+                    }
+                    else
+                        markdown.Append("|").AppendLine(); // Ensure line break after each table row
+                }
+                break;
 
-        return normalizedHtml.Trim(); // Return the trimmed and normalized HTML
+            case "th":
+                if (!isClosingTag)
+                {
+                    if (inTableHeader || !headerProcessed)
+                    {
+                        currentColumnCount++;
+                    }
+                    markdown.Append("| ");
+                }
+                break;
+            case "td":
+                if (!isClosingTag)
+                {
+                    markdown.Append("| ");
+                }
+                break;
+            case "thead":
+                if (!isClosingTag)
+                {
+                    inTableHeader = true; // Mark that we're inside the table header section
+                }
+                else if (isClosingTag && inTableHeader)
+                {
+                    if (!headerProcessed && currentColumnCount > 0)
+                    {
+                        // Generate the separator line dynamically based on the number of columns in the current table
+                        markdown.Append("|");
+                        for (int i = 0; i < currentColumnCount; i++)
+                        {
+                            markdown.Append(" --- |");
+                        }
+                        markdown.AppendLine(); // End the separator line
+                        headerProcessed = true;  // Mark header as processed
+                    }
+                    inTableHeader = false; // Reset the flag after processing the header
+                }
+                break;
+        }
     }
+
 
     /// <summary>
     /// Method to extract attributes from a tag
@@ -461,12 +420,36 @@ public class ConversionService
     /// <param name="tag"></param>
     /// <param name="attribute"></param>
     /// <returns></returns>
-    private string ExtractAttribute(string tag, string attribute)
+    private static string ExtractAttribute(string tag, string attribute)
     {
-        string pattern = $@"{attribute}\s*=\s*[""']([^""']+)[""']";
-        Match match = Regex.Match(tag, pattern);
-        return match.Success ? match.Groups[1].Value : string.Empty;
+        // Find the start index of the attribute
+        int startIndex = tag.IndexOf(attribute + "=", StringComparison.Ordinal);
+        if (startIndex == -1)
+            return string.Empty;
+
+        // Move the start index to the position after the `=` symbol
+        startIndex += attribute.Length + 1;
+
+        // Determine the quote character (if any) and find the end index
+        char quoteChar = tag[startIndex];
+        if (quoteChar == '"' || quoteChar == '\'')
+        {
+            startIndex++; // Skip the quote character
+            int endIndex = tag.IndexOf(quoteChar, startIndex);
+            if (endIndex == -1)
+                return string.Empty; // Malformed HTML, no closing quote
+            return tag.Substring(startIndex, endIndex - startIndex);
+        }
+        else
+        {
+            // Handle cases without quotes (e.g., src=proto:path)
+            int endIndex = tag.IndexOf(' ', startIndex);
+            if (endIndex == -1) endIndex = tag.Length; // Attribute goes till end
+            return tag.Substring(startIndex, endIndex - startIndex);
+        }
     }
+
+
 
     /// <summary>
     /// Method to extract inner content of a tag, needed for elements like 
@@ -474,20 +457,47 @@ public class ConversionService
     /// <param name="html"></param>
     /// <param name="position"></param>
     /// <returns></returns>
-    private string ExtractInnerContent(string html, ref int position)
+    private static string ExtractInnerContent(string html, ref int position)
     {
         int startContent = html.IndexOf('>', position) + 1;
         int endContent = html.IndexOf('<', startContent);
-        position = endContent;  // Move position to the end of the inner content
+        if (endContent == -1)
+            return string.Empty;
+
+        position = endContent;
         return html.Substring(startContent, endContent - startContent).Trim();
     }
 
+
     /// <summary>
-    /// Method to log errors
+    /// Normalize the html except spaces between tags
     /// </summary>
-    /// <param name="message"></param>
-    private void LogError(string message)
+    /// <param name="html"></param>
+    /// <returns></returns>
+    private static string NormalizeHtml(string html)
     {
-        _errorLogs.Add(message);
+        // Use a StringBuilder to build the normalized HTML string
+        var sb = new StringBuilder(html.Length);
+
+        // Iterate through the input HTML string
+        for (int i = 0; i < html.Length; i++)
+        {
+            char c = html[i];
+
+            // Replace tabs with a single space
+            if (c == '\t')
+            {
+                sb.Append(' ');
+            }
+            // Append the character if it's not a newline or carriage return
+            else if (c != '\n' && c != '\r')
+            {
+                sb.Append(c);
+            }
+        }
+
+        // Apply Regex.Replace to remove extra spaces after building the string
+        string normalizedHtml = sb.ToString();
+        return Regex.Replace(normalizedHtml, @"\s{2,}", " ").Trim();
     }
 }
