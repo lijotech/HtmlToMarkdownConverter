@@ -12,10 +12,12 @@
 		<PackageTags>HtmlToMarkdown; markdown converter; htmltomd; html converter; html2markdown; converthtml;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
-		<Version>1.1.0</Version>
+		<Version>2.0.0</Version>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReleaseNotes></PackageReleaseNotes>
+		<PackageReleaseNotes>Static Method Implementation
+Improved error handling
+Enhanced performance for larger HTML documents</PackageReleaseNotes>
 	</PropertyGroup>
 	<PropertyGroup>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
