@@ -11,24 +11,54 @@ HtmlToMarkdownConverter is a .NET library that converts HTML content to Markdown
 
 To install the HtmlToMarkdownConverter NuGet package, use the following command in the Package Manager Console:
 
-```sh
-Install-Package HtmlToMarkdownConverter
+```Bash
+dotnet add package HtmlToMarkdownConverter
 
 ```
 
-## Usage
+## Breaking Changes in v2.0.0
 
-After installing the package, you can use it in your project as follows:
-
-```
+### Previous Usage
+```csharp
 using HtmlToMarkdownService;
 
 var conversionService = new ConversionService();
 string htmlContent = "<p>Hello, World!</p>";
 string markdownContent = conversionService.ConvertHtmlToMarkdown(htmlContent);
+List<string> errorLogs = conversionService.GetErrorLogs();
+```
 
-Console.WriteLine(markdownContent);
+### Updated Usage (v2.0.0)
 
+```csharp
+string htmlContent = "<p>Hello, World!</p>";
+var result = ConversionService.ConvertHtmlToMarkdown(htmlContent);
+string outputString = result.Markdown; 
+List<string> errorLogs = result.Errors; 
+```
+
+### What Changed?
+
+- Static Method Implementation:
+
+	- The `ConversionService` is now replaced with Static class, offering a static method for improved simplicity.
+
+	- The `ConvertHtmlToMarkdown` method now returns a Result object containing both the Markdown string and error logs.
+
+- Result Object:
+
+	- Instead of separate methods for `ConvertHtmlToMarkdown` and `GetErrorLogs`, these are now combined into a single static call returning a structured object.
+
+## Usage
+
+```csharp
+var result = ConversionService.ConvertHtmlToMarkdown("<p>Hello, World!</p>");
+Console.WriteLine(result.Markdown);
+if (result.Errors.Any())
+{
+    Console.WriteLine("Conversion Errors:");
+    result.Errors.ForEach(Console.WriteLine);
+}
 ```
 
 ## Console Application
@@ -42,6 +72,10 @@ A console application is provided to check the functionality of the HtmlToMarkdo
 To see which conversions are supported and to verify the functionality, refer to the unit test project available at:
 
 [HtmlToMarkdownTests](https://github.com/lijotech/HtmlToMarkdownConverter/tree/master/HtmlToMarkdownTests)
+
+## Reporting Issues
+
+If you encounter any problems, please report them [here](https://github.com/lijotech/HtmlToMarkdownConverter/issues).
 
 ## Contributing
 
