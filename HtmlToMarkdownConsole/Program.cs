@@ -1,6 +1,6 @@
 ﻿
 using BenchmarkDotNet.Running;
-using HtmlToMarkdownService;
+using HtmlToMarkdown.Service;
 
 namespace HtmlToMarkdownConsole
 {
@@ -14,7 +14,6 @@ namespace HtmlToMarkdownConsole
 #if BENCHMARK
                 var summary = BenchmarkRunner.Run<HtmlToMarkdownBenchmark>();
 #endif
-                ConversionService conversionService = new ConversionService();
                 string html = @"
 
 <table>
@@ -59,10 +58,10 @@ namespace HtmlToMarkdownConsole
 <ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>
 ";
 
-                var result = conversionService.ConvertHtmlToMarkdown(html);
+                var result = ConversionService.ConvertHtmlToMarkdown(html);
                 Console.WriteLine("Markdown Output:");
-                Console.WriteLine(result);
-                var errors = conversionService.GetErrorLogs();
+                Console.WriteLine(result.Markdown);
+                var errors = result.Errors;
                 if (errors.Any())
                 {
                     errors.ForEach(error =>
