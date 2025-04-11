@@ -151,6 +151,13 @@
                     $('#errorLogs').text('Please enter HTML content before converting.');
                     return;
                 }
+
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                if (!token) {
+                    $('#errorLogs').text('RequestVerificationToken is missing. Please reload the page and try again.');
+                    return;
+                }
+
                 $.ajax({
                     url: '/Home/ConvertHtmlToMarkdown',
                     type: 'POST',

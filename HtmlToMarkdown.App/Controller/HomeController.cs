@@ -7,6 +7,7 @@ namespace HtmlToMarkdown.App.Controller
     {
         [HttpPost("ConvertHtmlToMarkdown")]
         [RequestSizeLimit(1024 * 1024)] // Limit request size to 1 MB        
+        [ValidateAntiForgeryToken]
         public IActionResult ConvertHtmlToMarkdown([FromBody] HtmlInputModel input)
         {
             if (string.IsNullOrWhiteSpace(input.Html))

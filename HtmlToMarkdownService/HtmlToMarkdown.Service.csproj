@@ -36,6 +36,7 @@ Enhanced performance for larger HTML documents</PackageReleaseNotes>
 	</PropertyGroup>
     <PropertyGroup>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageProjectUrl>https://github.com/lijotech/HtmlToMarkdownConverter</PackageProjectUrl>
     </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">

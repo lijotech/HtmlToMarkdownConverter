@@ -44,7 +44,7 @@ List<string> errorLogs = result.Errors;
 	
 	- From `v2.0.0` the namespace is `HtmlToMarkdown.Service` previously it was `HtmlToMarkdownService`.
 
-### Previous Usage (<=v1.0.8)
+### Previous Usage (<=v1.0.9)
 
 ```csharp
 using HtmlToMarkdownService;
