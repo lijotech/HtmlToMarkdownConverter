@@ -1,12 +1,13 @@
-﻿using HtmlToMarkdownService;
+﻿using HtmlToMarkdown.Service;
 using Microsoft.AspNetCore.Mvc;
 namespace HtmlToMarkdown.App.Controller
 {
     [Route("Home")]
     public class HomeController : ControllerBase
     {
-        [HttpPost ("ConvertHtmlToMarkdown")]
+        [HttpPost("ConvertHtmlToMarkdown")]
         [RequestSizeLimit(1024 * 1024)] // Limit request size to 1 MB        
+        [ValidateAntiForgeryToken]
         public IActionResult ConvertHtmlToMarkdown([FromBody] HtmlInputModel input)
         {
             if (string.IsNullOrWhiteSpace(input.Html))
@@ -15,11 +16,8 @@ namespace HtmlToMarkdown.App.Controller
             }
             try
             {
-                var conversionService = new ConversionService();
-                string markdownContent = conversionService.ConvertHtmlToMarkdown(input.Html);
-                var errorLogs = conversionService.GetErrorLogs();
-
-                return new JsonResult(new { markdown = markdownContent, errors = string.Join(", ", errorLogs) });
+                var result = ConversionService.ConvertHtmlToMarkdown(input.Html);
+                return new JsonResult(new { markdown = result.Markdown, errors = string.Join(", ", result.Errors) });
             }
             catch (Exception)
             {
