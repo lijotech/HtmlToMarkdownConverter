@@ -2,7 +2,8 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
-## v2.0.1 [UNRELEASED]
+## v2.0.1
+- Updates web app validation
 
 ## v2.0.0
 - UI updates to web app (editor,copy and clear button and grid splitter)
