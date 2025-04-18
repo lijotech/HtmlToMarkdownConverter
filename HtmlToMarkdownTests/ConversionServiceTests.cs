@@ -16,7 +16,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
-        Assert.False(result.Errors.Any());
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -31,6 +31,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -45,6 +46,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -59,6 +61,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -73,16 +76,19 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
     [InlineData("![Alt Text](proto:path)", "<img src=\"proto:path\" alt=\"Alt Text\" />")]
     [InlineData("![](proto:path)", "<img src=\"proto:path\" />")]
     [InlineData("![Alt Text]()", "<img alt=\"Alt Text\" />")]
-    public void ConvertsImage(string expected, string imageHtmlInput)
+    public void ConvertsImage(string expected, string html)
     {
 
-        Assert.Equal(expected, ConversionService.ConvertHtmlToMarkdown(imageHtmlInput).Markdown);
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+        Assert.Equal(expected, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -106,9 +112,11 @@ public class ConversionServiceTests
     [InlineData("#### Heading Text\r\n\r\n", "<h4>Heading Text</h4>")]
     [InlineData("##### Heading Text\r\n\r\n", "<h5>Heading Text</h5>")]
     [InlineData("###### Heading Text\r\n\r\n", "<h6>Heading Text</h6>")]
-    public void ConvertsHeading(string expected, string htmlInput)
+    public void ConvertsHeading(string expected, string html)
     {
-        Assert.Equal(expected, ConversionService.ConvertHtmlToMarkdown(htmlInput).Markdown);
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+        Assert.Equal(expected, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -123,6 +131,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
@@ -137,15 +146,18 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
     [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br/>Text</p>")]
     [InlineData("Paragraph \r\nText\r\n\r\n", "<p>Paragraph <br>Text</p>")]
-    public void ConvertsBreak(string expected, string htmlInput)
+    public void ConvertsBreak(string expected, string html)
     {
 
-        Assert.Equal(expected, ConversionService.ConvertHtmlToMarkdown(htmlInput).Markdown);
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+        Assert.Equal(expected, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Theory]
@@ -160,32 +172,61 @@ public class ConversionServiceTests
     [Fact]
     public void ConvertsBlockQuote()
     {
+        // Arrange
+        var html = "<blockquote>Quote Text</blockquote>";
+        var expectedMarkdown = "\r\n> Quote Text\r\n";
 
-        Assert.Equal("\r\n> Quote Text\r\n", ConversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text</blockquote>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ConvertsNestedBlockQuote()
     {
+        // Arrange
+        var html = "<blockquote>Quote Text<blockquote>Inner Quote Text</blockquote>More Text</blockquote>";
+        var expectedMarkdown = "\r\n> Quote Text\r\n>> Inner Quote Text\r\n> More Text\r\n";
 
-        Assert.Equal("\r\n> Quote Text\r\n>> Inner Quote Text\r\n> More Text\r\n",
-            ConversionService.ConvertHtmlToMarkdown("<blockquote>Quote Text<blockquote>Inner Quote Text</blockquote>More Text</blockquote>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ConvertsUnOrderedList()
     {
+        // Arrange
+        var html = "<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>";
+        var expectedMarkdown = "\r\n * Item 1\r\n * Item 2\r\n * Item 3\r\n\r\n";
 
-        Assert.Equal("\r\n * Item 1\r\n * Item 2\r\n * Item 3\r\n\r\n",
-            ConversionService.ConvertHtmlToMarkdown("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ConvertsOrderedList()
     {
+        // Arrange
+        var html = "<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>";
+        var expectedMarkdown = "\r\n 1. Item 1\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n";
 
-        Assert.Equal("\r\n 1. Item 1\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
-            ConversionService.ConvertHtmlToMarkdown("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
 
@@ -201,6 +242,7 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
     [Fact]
     public void ConvertsTable2()
@@ -214,60 +256,87 @@ public class ConversionServiceTests
 
         // Assert
         Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ConvertsNestedUnOrderedList()
     {
+        // Arrange
+        var html = "<ul><li>Item 1<ol><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>";
+        var expectedMarkdown = "\r\n * Item 1\r\n   1. Sub Item 1\r\n   1. Sub Item 2\r\n   1. Sub Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n";
 
-        Assert.Equal("\r\n * Item 1\r\n   1. Sub Item 1\r\n   1. Sub Item 2\r\n   1. Sub Item 3\r\n\r\n\r\n * Item 2\r\n * Item 3\r\n\r\n",
-            ConversionService.ConvertHtmlToMarkdown("<ul><li>Item 1<ol><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ConvertsNestedOrderedList()
     {
+        // Arrange
+        var html = "<ol><li>Item 1<ul><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>";
+        var expectedMarkdown = "\r\n 1. Item 1\r\n   * Sub Item 1\r\n   * Sub Item 2\r\n   * Sub Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n";
 
-        Assert.Equal("\r\n 1. Item 1\r\n   * Sub Item 1\r\n   * Sub Item 2\r\n   * Sub Item 3\r\n\r\n\r\n 1. Item 2\r\n 1. Item 3\r\n\r\n",
-            ConversionService.ConvertHtmlToMarkdown("<ol><li>Item 1<ul><li>Sub Item 1</li><li>Sub Item 2</li><li>Sub Item 3</li></ul></li><li>Item 2</li><li>Item 3</li></ol>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void TestEmptyDiv()
     {
-
-        Assert.Equal("", ConversionService.ConvertHtmlToMarkdown("<div></div>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown("<div></div>");
+        // Assert
+        Assert.Equal("", result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void TestWithBody()
     {
-
-        Assert.Equal("Body",
-            ConversionService.ConvertHtmlToMarkdown("<html><head><title>Title</title><style>some style</style></head><body>Body</body></html>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown("<html><head><title>Title</title><style>some style</style></head><body>Body</body></html>");
+        // Assert
+        Assert.Equal("Body", result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void TestWithStyle()
     {
-
-        Assert.Equal("Body",
-            ConversionService.ConvertHtmlToMarkdown("<style>some style</style>Body").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown("<style>some style</style>Body");
+        // Assert
+        Assert.Equal("Body", result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void TestWithScript()
     {
-
-        Assert.Equal("Body",
-            ConversionService.ConvertHtmlToMarkdown("<script>sdfdsf</script>Body").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown("<script>some script</script>Body");
+        // Assert
+        Assert.Equal("Body", result.Markdown);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void TestCustomTag()
     {
-
-        Assert.Equal("custom tag content",
-            ConversionService.ConvertHtmlToMarkdown("<xyz>custom tag content</xyz>").Markdown);
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown("<xyz>custom tag content</xyz>");
+        // Assert
+        Assert.Equal("custom tag content", result.Markdown);
+        Assert.NotEmpty(result.Errors);
+        Assert.True(result.Errors.Count > 1);
     }
 }

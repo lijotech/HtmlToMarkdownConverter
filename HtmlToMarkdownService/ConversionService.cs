@@ -15,7 +15,7 @@ public static class ConversionService
     /// <summary>
     /// Allowed html tags for conversion
     /// </summary>
-    private static readonly HashSet<string> _allowedTags = new() { "div", "iframe", "input", "label", "button", "span", "i", "em", "br", "hr", "form", "tbody", "table", "thead", "tr", "th", "td", "ul", "ol", "li", "a", "img", "h1", "h2", "h3", "h4", "h5", "h6", "p", "b", "strong", "blockquote", "code" };
+    private static readonly HashSet<string> _allowedTags = new() { "div", "iframe", "input", "label", "button", "span", "i", "em", "br", "hr", "form", "tbody", "table", "thead", "tr", "th", "td", "ul", "ol", "li", "a", "img", "h1", "h2", "h3", "h4", "h5", "h6", "p", "b", "strong", "blockquote", "code","html","body" };
 
     /// <summary>
     /// Converts HTML to Markdown.
@@ -281,7 +281,10 @@ public static class ConversionService
                         break;
 
                     default:
-                        errors.Add($"Unrecognized tag: {tagName}");
+                        if (!_allowedTags.Contains(tagName))
+                        {
+                            errors.Add($"Unrecognized tag: {tagName}");
+                        }
                         break;
                 }
 
