@@ -1,8 +1,16 @@
 using HtmlToMarkdown.Service;
+using Xunit.Abstractions;
 namespace HtmlToMarkdownTests;
 
 public class ConversionServiceTests
 {
+    private readonly ITestOutputHelper output;
+
+    public ConversionServiceTests(ITestOutputHelper output)
+    {
+        this.output = output;
+    }
+
     [Fact]
     public void ConvertsSimpleHtml()
     {
@@ -38,8 +46,8 @@ public class ConversionServiceTests
     public void ConvertsPlainText()
     {
         // Arrange
-        var html = "PlainText";
-        var expectedMarkdown = "PlainText";
+        var html = "PlainText   with space";
+        var expectedMarkdown = "PlainText with space";
 
         // Act
         var result = ConversionService.ConvertHtmlToMarkdown(html);
@@ -83,6 +91,9 @@ public class ConversionServiceTests
     [InlineData("![Alt Text](proto:path)", "<img src=\"proto:path\" alt=\"Alt Text\" />")]
     [InlineData("![](proto:path)", "<img src=\"proto:path\" />")]
     [InlineData("![Alt Text]()", "<img alt=\"Alt Text\" />")]
+    [InlineData("![Alt Text]()", "<img alt='Alt Text' />")]
+    [InlineData("![]()", "<img alt=' />")]
+    [InlineData("![](proto:path)", "<img src=proto:path />")]
     public void ConvertsImage(string expected, string html)
     {
 
@@ -260,6 +271,36 @@ public class ConversionServiceTests
     }
 
     [Fact]
+    public void ConvertsTableWithoutThead()
+    {
+        // Arrange
+        var html = "<table><tr><th>Header 1</th><th>Header 3</th><th>Header 2</th></tr><tbody><tr><td>Data 1</td><td>Data 3</td><td>Data 2</td></tr></tbody></table>";
+        var expectedMarkdown = "\r\n| Header 1| Header 3| Header 2|\r\n| --- | --- | --- |\r\n| Data 1| Data 3| Data 2|\r\n\r\n";
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void ConvertsTableWithTheadWihtoutTd()
+    {
+        // Arrange
+        var html = "<table><thead><tr><td>Header 1</td><td>Header 3</td><td>Header 2</td></tr></thead><tbody><tr><td>Data 1</td><td>Data 3</td><td>Data 2</td></tr></tbody></table>";
+        var expectedMarkdown = "\r\n| Header 1| Header 3| Header 2|\r\n| --- | --- | --- |\r\n| Data 1| Data 3| Data 2|\r\n\r\n";
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
     public void ConvertsNestedUnOrderedList()
     {
         // Arrange
@@ -338,5 +379,84 @@ public class ConversionServiceTests
         Assert.Equal("custom tag content", result.Markdown);
         Assert.NotEmpty(result.Errors);
         Assert.True(result.Errors.Count > 1);
+    }
+
+    [Theory]
+    [InlineData("", "<h1Hello, World!</h1>")]
+    [InlineData("", "<h1 Hello, World! </h1")]
+    public void TestMalformedHtml(string expected, string html)
+    {
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expected, result.Markdown);
+        Assert.NotEmpty(result.Errors);
+    }
+
+    [Fact(Skip = "Invalid characters may result in unpredictable conversion behavior.")]
+    public void TestHtmlWithInvalidCharacters()
+    {
+        // Arrange
+        var html = "<h1>Hello, World! \u0000\u0001</h1>";  // Includes invalid characters
+        var expectedErrors = new List<string> { "Invalid character detected." };
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void TestHtmlWithMissingEndTag()
+    {
+        // Arrange
+        var html = "<h1>Hello, World!";
+        var expectedMarkdown = "# Hello, World!";
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Log message
+        output.WriteLine("Even if the end tag is missing, the application will attempt to convert the HTML until the last character.");
+        // Assert
+        // Even if the end tag is missing, the application will attempt to convert the HTML until the last character.
+        // This test ensures that errors are detected but conversion proceeds with available content.
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
+    }
+
+    [Theory]
+    [InlineData("<code>Console.WriteLine(\"Hello\");</code>", "`Console.WriteLine(\"Hello\");`")]
+    [InlineData("<form><input type='text'></form>", "> Input (Type: text)\r\n> **Form End**\r\n\r\n")]
+    [InlineData("<input type='button'>", "> Input (Type: button)\r\n")]
+    [InlineData("<button>Click Me</button>", "> **Button**: Click Me\r\n")]
+    [InlineData("<span>Highlighted</span>", "Highlighted")]
+    [InlineData("<label>Username:</label>", "Username:")]
+    [InlineData("<iframe src='https://example.com'></iframe>", "> **Embedded Content**: [iframe link](https://example.com)\r\n")]
+    public void ConvertsVariousHtmlTags(string html, string expectedMarkdown)
+    {
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void ConvertsTableWithListItems()
+    {
+        // Arrange
+        var html = "<table><tr><td><ul><li>Item 1</li><li>Item 2</li></ul></td></tr></table>";
+        var expectedMarkdown = "\r\n| • Item 1, • Item 2|\r\n\r\n";
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
     }
 }

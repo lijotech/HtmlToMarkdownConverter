@@ -15,7 +15,7 @@ public static class ConversionService
     /// <summary>
     /// Allowed html tags for conversion
     /// </summary>
-    private static readonly HashSet<string> _allowedTags = new() { "div", "iframe", "input", "label", "button", "span", "i", "em", "br", "hr", "form", "tbody", "table", "thead", "tr", "th", "td", "ul", "ol", "li", "a", "img", "h1", "h2", "h3", "h4", "h5", "h6", "p", "b", "strong", "blockquote", "code","html","body" };
+    private static readonly HashSet<string> _allowedTags = new() { "div", "iframe", "input", "label", "button", "span", "i", "em", "br", "hr", "form", "tbody", "table", "thead", "tr", "th", "td", "ul", "ol", "li", "a", "img", "h1", "h2", "h3", "h4", "h5", "h6", "p", "b", "strong", "blockquote", "code", "html", "body" };
 
     /// <summary>
     /// Converts HTML to Markdown.
@@ -49,7 +49,7 @@ public static class ConversionService
 
         StringBuilder markdown = new StringBuilder();
         int position = 0;
-        bool inTableHeader = false;
+        bool inTableHeader = false; //to reflect if we are inside <thead>
         int currentColumnCount = 0; // Temporary variable to track number of columns in the current table
         int blockquoteDepth = 0; // Track blockquote nesting level
         Stack<string> listTypeStack = new Stack<string>(); // Stack to track parent list types
@@ -57,6 +57,8 @@ public static class ConversionService
         int listIndentLevel = 0;  // Track indentation level for nested lists
         bool ignoreContent = false; // Flag to track whether content should be ignored
         bool headerProcessed = false;  // To track if table header has been processed
+        bool inTableCell = false;  // To track if contents inside the table
+        bool rowHasHeader = false; // tracks if a row row should trigger a markdown header (| --- | --- |)
 
         while (position < normalizedHtml.Length)
         {
@@ -155,31 +157,50 @@ public static class ConversionService
                         {
                             listIndentLevel--;
                             listTypeStack.Pop(); // Pop the stack when closing the list
-                            markdown.AppendLine();
+                            if (!inTableCell)
+                                markdown.AppendLine();
                         }
                         break;
 
                     case "li":
                         if (!isClosingTag)
                         {
-                            // If it's the first list item, insert a line break before the item
-                            if (firstListItem)
-                            {
-                                markdown.AppendLine(); // Add a line break before the first list item
-                                firstListItem = false; // After the first list item, set flag to false
-                            }
                             // Get the current list type from the stack
                             string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
-
-                            // Append the appropriate list marker (* for ul, 1. for ol)
-                            if (listIndentLevel > 1) //if indent level is more than one add a space before syntax (* or 1)
+                            string marker = parentListType == "ul" ? "•" : "1.";
+                            if (inTableCell)
                             {
-                                markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? " * " : " 1. "));
+                                // Inline list for table cells
+                                if (!firstListItem)
+                                {
+                                    markdown.Append(", "); // comma-separated inline list
+                                }
+
+                                markdown.Append($"{marker} ");
+                                if (firstListItem)
+                                {
+                                    firstListItem = false;
+                                }
                             }
                             else
-                                markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
+                            {
+                                // If it's the first list item, insert a line break before the item
+                                if (firstListItem)
+                                {
+                                    markdown.AppendLine(); // Add a line break before the first list item
+                                    firstListItem = false; // After the first list item, set flag to false
+                                }
+
+                                // Append the appropriate list marker (* for ul, 1. for ol)
+                                if (listIndentLevel > 1) //if indent level is more than one add a space before syntax (* or 1)
+                                {
+                                    markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? " * " : " 1. "));
+                                }
+                                else
+                                    markdown.Append(new string('~', listIndentLevel) + (parentListType == "ul" ? "* " : "1. "));
+                            }
                         }
-                        if (isClosingTag)
+                        if (isClosingTag && !inTableCell)
                         {
                             markdown.AppendLine(); // Ensure line break after each list item
                         }
@@ -247,7 +268,7 @@ public static class ConversionService
                     case "td":
                     case "thead":
                     case "tbody":
-                        ProcessTableTag(normalizedHtml, tagName, isClosingTag, ref position, ref markdown, ref currentColumnCount, ref headerProcessed, ref inTableHeader);
+                        ProcessTableTag(normalizedHtml, tagName, isClosingTag, ref position, ref markdown, ref currentColumnCount, ref headerProcessed, ref inTableHeader, ref inTableCell , ref rowHasHeader);
                         break;
 
                     case "form":
@@ -276,8 +297,11 @@ public static class ConversionService
                         break;
 
                     case "iframe":
-                        string iframeSrc = ExtractAttribute(tag, "src");
-                        markdown.AppendLine($"> **Embedded Content**: [iframe link]({iframeSrc})");
+                        if (!isClosingTag)
+                        {
+                            string iframeSrc = ExtractAttribute(tag, "src");
+                            markdown.AppendLine($"> **Embedded Content**: [iframe link]({iframeSrc})");
+                        }
                         break;
 
                     default:
@@ -339,7 +363,7 @@ public static class ConversionService
         return finalString;
     }
 
-    private static void ProcessTableTag(string normalizedHtml, string tagName, bool isClosingTag, ref int position, ref StringBuilder markdown, ref int currentColumnCount, ref bool headerProcessed, ref bool inTableHeader)
+    private static void ProcessTableTag(string normalizedHtml, string tagName, bool isClosingTag, ref int position, ref StringBuilder markdown, ref int currentColumnCount, ref bool headerProcessed, ref bool inTableHeader, ref bool inTableCell, ref bool rowHasHeader)
     {
         switch (tagName)
         {
@@ -357,12 +381,16 @@ public static class ConversionService
                 break;
 
             case "tr":
-                if (isClosingTag)
+                if (!isClosingTag)
                 {
+                    rowHasHeader = false;
+                }
+                else
+                {
+                    markdown.Append("|").AppendLine();
                     // If the row had <th> tags but no <thead>, add the separator after processing the row
-                    if (!headerProcessed && currentColumnCount > 0)
+                    if ((inTableHeader || rowHasHeader) && !headerProcessed && currentColumnCount > 0 )
                     {
-                        markdown.Append("|").AppendLine();
                         markdown.Append("|");
                         for (int i = 0; i < currentColumnCount; i++)
                         {
@@ -371,25 +399,38 @@ public static class ConversionService
                         markdown.AppendLine(); // End the separator line
                         headerProcessed = true;  // Mark header as processed
                     }
-                    else
-                        markdown.Append("|").AppendLine(); // Ensure line break after each table row
                 }
                 break;
 
             case "th":
                 if (!isClosingTag)
                 {
-                    if (inTableHeader || !headerProcessed)
+                    if ((inTableHeader || rowHasHeader) || !headerProcessed)
                     {
                         currentColumnCount++;
                     }
+                    inTableCell = true;
                     markdown.Append("| ");
+                    rowHasHeader = true;
+                }
+                else
+                {
+                    inTableCell = false;
                 }
                 break;
             case "td":
                 if (!isClosingTag)
                 {
+                    if ((inTableHeader || rowHasHeader) && !headerProcessed)
+                    {
+                        currentColumnCount++;
+                    }
+                    inTableCell = true;
                     markdown.Append("| ");
+                }
+                else
+                {
+                    inTableCell = false;
                 }
                 break;
             case "thead":

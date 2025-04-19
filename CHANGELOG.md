@@ -4,6 +4,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## v2.0.1
 - Updates web app validation
+- Improves test cases with error count check
+- Improves `table` header html handling
+- Add conversion support for list (`ul`,`ol`) inside html
 
 ## v2.0.0
 - UI updates to web app (editor,copy and clear button and grid splitter)
