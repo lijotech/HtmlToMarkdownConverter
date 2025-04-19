@@ -2,12 +2,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
-## v2.0.1
+## v2.0.2
 - Add conversion support for list (`ul`,`ol`) inside table
 - Add conversion support for nested list inside table
 - Improves `table` header html handling
 - Improves test cases with error count check
 - Updates web app validation
+
+## v2.0.1
+- update Readme for the package
 
 ## v2.0.0
 - UI updates to web app (editor,copy and clear button and grid splitter)
