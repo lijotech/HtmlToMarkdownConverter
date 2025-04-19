@@ -167,16 +167,17 @@ public static class ConversionService
                         {
                             // Get the current list type from the stack
                             string parentListType = listTypeStack.Count > 0 ? listTypeStack.Peek() : "ul";
-                            string marker = parentListType == "ul" ? "•" : "1.";
+                            string marker = parentListType == "ul" ? "*" : "1.";
                             if (inTableCell)
                             {
                                 // Inline list for table cells
-                                if (!firstListItem)
+                                markdown.Append("<br>");
+                                if (listIndentLevel > 1)
                                 {
-                                    markdown.Append(", "); // comma-separated inline list
+                                    markdown.Append(string.Concat(Enumerable.Repeat("&nbsp;", listIndentLevel)) + (parentListType == "ul" ? " * " : " 1. "));
                                 }
-
-                                markdown.Append($"{marker} ");
+                                else
+                                    markdown.Append($"{marker} ");
                                 if (firstListItem)
                                 {
                                     firstListItem = false;
@@ -268,7 +269,7 @@ public static class ConversionService
                     case "td":
                     case "thead":
                     case "tbody":
-                        ProcessTableTag(normalizedHtml, tagName, isClosingTag, ref position, ref markdown, ref currentColumnCount, ref headerProcessed, ref inTableHeader, ref inTableCell , ref rowHasHeader);
+                        ProcessTableTag(normalizedHtml, tagName, isClosingTag, ref position, ref markdown, ref currentColumnCount, ref headerProcessed, ref inTableHeader, ref inTableCell, ref rowHasHeader);
                         break;
 
                     case "form":
@@ -389,7 +390,7 @@ public static class ConversionService
                 {
                     markdown.Append("|").AppendLine();
                     // If the row had <th> tags but no <thead>, add the separator after processing the row
-                    if ((inTableHeader || rowHasHeader) && !headerProcessed && currentColumnCount > 0 )
+                    if ((inTableHeader || rowHasHeader) && !headerProcessed && currentColumnCount > 0)
                     {
                         markdown.Append("|");
                         for (int i = 0; i < currentColumnCount; i++)

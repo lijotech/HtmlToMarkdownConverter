@@ -450,7 +450,22 @@ public class ConversionServiceTests
     {
         // Arrange
         var html = "<table><tr><td><ul><li>Item 1</li><li>Item 2</li></ul></td></tr></table>";
-        var expectedMarkdown = "\r\n| • Item 1, • Item 2|\r\n\r\n";
+        var expectedMarkdown = "\r\n| <br>* Item 1<br>* Item 2|\r\n\r\n";
+
+        // Act
+        var result = ConversionService.ConvertHtmlToMarkdown(html);
+
+        // Assert
+        Assert.Equal(expectedMarkdown, result.Markdown);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void ConvertsTableWithNestedList()
+    {
+        // Arrange
+        var html = "<table><tr><td><ul><li>Item 1<ul><li>Subitem A</li><li>Subitem B</li></ul></li><li>Item 2</li></ul></td></tr></table>";
+        var expectedMarkdown = "\r\n| <br>* Item 1<br>&nbsp;&nbsp; * Subitem A<br>&nbsp;&nbsp; * Subitem B<br>* Item 2|\r\n\r\n";
 
         // Act
         var result = ConversionService.ConvertHtmlToMarkdown(html);
