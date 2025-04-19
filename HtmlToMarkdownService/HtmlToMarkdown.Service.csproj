@@ -12,12 +12,14 @@
 		<PackageTags>HtmlToMarkdown; markdown converter; htmltomd; html converter; html2markdown; converthtml;</PackageTags>
 		<Company>lijotech</Company>
 		<Authors>Lijo Sebastian</Authors>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReleaseNotes>Static Method Implementation
-Improved error handling
-Enhanced performance for larger HTML documents</PackageReleaseNotes>
+		<PackageReleaseNotes>- Enhanced HTML table conversion for more accurate markdown representation.
+- Improved support for list conversion inside tables, including nested lists.
+- Refinements in table header handling for better markdown output.
+- Optimized performance with bug fixes and stability improvements.
+- Updates test cases with enhanced error detection and coverage.</PackageReleaseNotes>
 	</PropertyGroup>
 	<PropertyGroup>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

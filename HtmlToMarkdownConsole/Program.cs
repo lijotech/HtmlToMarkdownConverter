@@ -56,6 +56,8 @@ namespace HtmlToMarkdownConsole
 </table>
 
 <ul><li>Item 1<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></li><li>Item 2</li><li>Item 3</li></ul>
+
+<table><tr><td><ul><li>Item 1<ul><li>Subitem A</li><li>Subitem B</li></ul></li><li>Item 2</li></ul></td></tr></table>
 ";
 
                 var result = ConversionService.ConvertHtmlToMarkdown(html);
